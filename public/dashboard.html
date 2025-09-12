@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Student Dashboard • Moorecoin</title>
+	<link rel="stylesheet" href="./styles.css" />
+	<link rel="stylesheet" href="./dashboard.css" />
+	<link rel="icon" type="image/png" href="./img/favicon.png" />
+
+	<meta name="description" content="Earn and exchange Moorecoins for extra credit. Sign in to get started." />
+	<meta property="og:title" content="Moorecoin" />
+	<meta property="og:description" content="Earn and exchange Moorecoins for extra credit." />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="https://example.com/" />
+	<meta property="og:image" content="https://example.com/img/favicon.png" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="Moorecoin" />
+	<meta name="twitter:description" content="Earn and exchange Moorecoins for extra credit." />
+	<meta name="twitter:image" content="https://example.com/img/favicon.png" />
+
+	<!-- Modal component styles -->
+	<style>
+		.modal-overlay {
+			position: fixed;
+			inset: 0;
+			background: rgba(0, 0, 0, 0.58);
+			backdrop-filter: blur(3px);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			z-index: 1100;
+			animation: fadeIn .18s ease;
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0
+			}
+
+			to {
+				opacity: 1
+			}
+		}
+
+		@keyframes scaleIn {
+			from {
+				transform: scale(.94) translateY(6px);
+				opacity: 0
+			}
+
+			to {
+				transform: scale(1) translateY(0);
+				opacity: 1
+			}
+		}
+
+		.modal {
+			background: #1d1f23;
+			color: #fafafa;
+			border: 1px solid #2e3238;
+			border-radius: 14px;
+			width: min(520px, 92vw);
+			max-height: 80vh;
+			overflow: hidden;
+			display: flex;
+			flex-direction: column;
+			box-shadow: 0 6px 30px -6px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+			animation: scaleIn .24s cubic-bezier(.4, .6, .3, 1);
+			position: relative;
+		}
+
+		.modal-header {
+			padding: 18px 22px 12px;
+			display: flex;
+			gap: 12px;
+			align-items: center;
+		}
+
+		.modal-header h2 {
+			font-size: 1.25rem;
+			margin: 0;
+			font-weight: 600;
+			letter-spacing: .5px;
+		}
+
+		.modal-close {
+			margin-left: auto;
+			background: transparent;
+			border: 0;
+			color: #c7cdd6;
+			font-size: 1.25rem;
+			cursor: pointer;
+			line-height: 1;
+			padding: 4px 8px;
+			border-radius: 8px;
+			transition: background .15s;
+		}
+
+		.modal-close:hover,
+		.modal-close:focus-visible {
+			background: #2b3138;
+			outline: none;
+		}
+
+		.modal-body {
+			padding: 8px 22px 20px;
+			overflow-y: auto;
+			scrollbar-width: thin;
+		}
+
+		.modal-footer {
+			padding: 14px 22px 18px;
+			display: flex;
+			gap: 12px;
+			justify-content: flex-end;
+			background: linear-gradient(#1d1f23, #181a1d);
+			border-top: 1px solid #292d33;
+		}
+
+		.modal-footer button {
+			border-radius: 10px;
+			font-weight: 600;
+		}
+
+		.btn-secondary {
+			background: #2c3138;
+		}
+
+		.btn-secondary:hover {
+			background: #353b43;
+		}
+
+		.btn-primary {
+			background: linear-gradient(92deg, #4361ee, #3a86ff);
+		}
+
+		.btn-primary:hover {
+			filter: brightness(1.08);
+		}
+
+		input[type=number],
+		input[type=text] {
+			width: 100%;
+			background: #23262b;
+			border: 1px solid #30343a;
+			padding: 10px 12px;
+			border-radius: 10px;
+			color: #f2f6fa;
+			font-size: .97rem;
+		}
+
+		input[type=number]:focus-visible,
+		input[type=text]:focus-visible {
+			outline: 2px solid #3a86ff;
+			outline-offset: 2px;
+		}
+
+		.form-row {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+			margin-bottom: 14px;
+		}
+
+		.inline-info {
+			font-size: .78rem;
+			opacity: .75;
+			letter-spacing: .3px;
+		}
+
+		.value-chip {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			background: #27313d;
+			color: #d8e6ff;
+			padding: 4px 10px 5px;
+			border-radius: 999px;
+			font-size: .72rem;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: .8px;
+		}
+
+		.two-col {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 14px;
+		}
+
+		.badge-rate {
+			background: #143d2d;
+			color: #37d28f;
+		}
+
+		.modal-body hr {
+			border: none;
+			height: 1px;
+			background: #272b31;
+			margin: 18px 0;
+		}
+
+		.notice {
+			background: #252a30;
+			border: 1px solid #313840;
+			padding: 10px 14px;
+			border-radius: 10px;
+			font-size: .8rem;
+			line-height: 1.35;
+		}
+
+		.notice strong {
+			color: #fff;
+		}
+
+		.link-like {
+			color: #6da8ff;
+			cursor: pointer;
+		}
+
+		.link-like:hover {
+			text-decoration: underline;
+		}
+	</style>
+</head>
+
+<body>
+	<img src="./img/favicon.png" alt="Moorecoin Logo" id="logo" />
+
+	<img src="./img/default-profile-picture.svg" alt="Profile Picture" id="profile-pic" />
+
+	<!-- Rotating investor splash moved to top -->
+	<div id="investor-splash" aria-live="polite" role="status"></div>
+
+	<!-- Profile dropdown menu -->
+	<div id="profile-menu" class="profile-menu hidden" role="menu" aria-hidden="true">
+		<div class="profile-menu-header">
+			<img id="profile-menu-avatar" src="./img/default-profile-picture.svg" alt="Profile" />
+			<div class="profile-menu-text">
+				<span id="profile-menu-name">Student</span>
+				<small id="profile-menu-email"></small>
+			</div>
+		</div>
+		<hr />
+		<button class="profile-menu-item" id="admin-console" role="menuitem" style="display:none;">Admin
+			Console</button>
+		<button class="profile-menu-item" id="view-profile" role="menuitem">View Profile</button>
+		<button class="profile-menu-item" id="sign-out" role="menuitem">Sign Out</button>
+	</div>
+
+	<div id="welcome-container">
+		<h1>Hello, <span id="display-name">Student</span>!</h1>
+	</div>
+
+	<div id="balance-container">
+		<div class="balance-item">
+			<p class="subtext">Moorecoins</p>
+			<h3 id="moorecoins">0</h3>
+		</div>
+
+		<div class="balance-item">
+			<h3>&asymp;</h3>
+		</div>
+
+		<div class="balance-item">
+			<p class="subtext">EC Points</p>
+			<h3 id="ec">0</h3>
+		</div>
+	</div>
+
+	<div id="moorecoin-value-container">
+		<p id="moorecoin-value">
+			1 &asymp; <span id="moorecoin-ec-value">0.00</span>
+		</p>
+		<p id="interest-rate" aria-live="polite">
+			2-Week Bond ROI: <span id="interest-rate-value">--%</span>
+		</p>
+		<p id="bond-countdown" style="display:none;font-size:.8rem;opacity:.85;letter-spacing:.5px; margin-top:4px;">
+			Bond Matures In: <span id="bond-remaining">--:--:--</span>
+		</p>
+	</div>
+
+	<div id="button-container">
+		<button id="exchange-button">Exchange Coins</button>
+		<button id="buy-bonds">Buy Bonds</button>
+		<button id="view-bond" style="display:none;">View Bond</button>
+		<!-- <button id="casino-button">Goto Casino</button> -->
+	</div>
+
+	<footer>
+		<div id="footer-content">
+			<a href="https://github.com/halleyscommet/moorecoin" target="_blank">Source Code</a>
+			<a href="./credits.html">Credits</a>
+			<a href="./feedback.html">Feedback</a>
+		</div>
+	</footer>
+
+	<script type="module">
+		import { app, apiBase } from "./app.js?v=1";
+		import { calculateExchangeRate, calculateInterestRate } from "./app.js?v=1";
+		import {
+			getAuth,
+			onAuthStateChanged,
+		} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+		const auth = getAuth(app);
+
+		let openModalRef = null; // track current dialog
+		function createModal({ title, body, actions = [], initialFocus, labelledById }) {
+			if (openModalRef) openModalRef.close();
+			const overlay = document.createElement('div');
+			overlay.className = 'modal-overlay';
+			overlay.tabIndex = -1;
+			const dialog = document.createElement('div');
+			dialog.className = 'modal';
+			dialog.setAttribute('role', 'dialog');
+			dialog.setAttribute('aria-modal', 'true');
+			const header = document.createElement('div');
+			header.className = 'modal-header';
+			const h2 = document.createElement('h2');
+			h2.textContent = title;
+			dialog.setAttribute('aria-labelledby', h2.id);
+			const closeBtn = document.createElement('button');
+			closeBtn.className = 'modal-close';
+			closeBtn.setAttribute('aria-label', 'Close dialog');
+			closeBtn.innerHTML = '&times;';
+			closeBtn.addEventListener('click', () => close());
+			header.append(h2, closeBtn);
+			const bodyWrap = document.createElement('div');
+			bodyWrap.className = 'modal-body';
+			if (typeof body === 'string') bodyWrap.innerHTML = body; else bodyWrap.append(body);
+			const footer = document.createElement('div');
+			footer.className = 'modal-footer';
+			if (!actions.length) {
+				const def = document.createElement('button');
+				def.textContent = 'Close';
+				def.className = 'btn-secondary';
+				def.addEventListener('click', () => close());
+				footer.append(def);
+			} else {
+				actions.forEach(cfg => {
+					const btn = document.createElement('button');
+					btn.textContent = cfg.label;
+					btn.type = cfg.type || 'button';
+					btn.className = (cfg.primary ? 'btn-primary' : 'btn-secondary');
+					btn.addEventListener('click', async () => {
+						if (cfg.onClick) {
+							try { const res = await cfg.onClick({ close }); if (cfg.closeOnResolve !== false) close(res); } catch (e) { console.error(e); }
+						} else close();
+					});
+					footer.append(btn);
+				});
+			}
+			dialog.append(header, bodyWrap, footer);
+			overlay.append(dialog);
+			function trap(e) {
+				if (e.key === 'Escape') { e.stopPropagation(); close(); }
+				// rudimentary focus trap
+				if (e.key === 'Tab') {
+					const focusables = dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+					const list = Array.from(focusables).filter(el => !el.disabled && el.offsetParent !== null);
+					if (!list.length) return;
+					const first = list[0];
+					const last = list[list.length - 1];
+					if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+					else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+				}
+			}
+			function close(result) {
+				document.removeEventListener('keydown', trap, true);
+				overlay.removeEventListener('click', overlayClick, true);
+				overlay.remove();
+				openModalRef = null;
+				return result;
+			}
+			function overlayClick(e) { if (e.target === overlay) close(); }
+			document.body.append(overlay);
+			setTimeout(() => { // allow paint
+				const focusTarget = initialFocus ? dialog.querySelector(initialFocus) : dialog.querySelector('input, button');
+				focusTarget?.focus({ preventScroll: true });
+			}, 15);
+			document.addEventListener('keydown', trap, true);
+			overlay.addEventListener('click', overlayClick, true);
+			openModalRef = { close, overlay, dialog };
+			return openModalRef;
+		}
+
+		let latestExchangeRate = 0; // updated after user data load
+		let currentUserMoorecoins = 0; // track user's current spendable balance
+		let currentIdToken = null; // store auth token for API calls
+		function refreshExchangeRateDisplay() {
+			const span = document.querySelector('#ex-rate');
+			if (span) span.textContent = latestExchangeRate.toFixed(2);
+		}
+
+		const getUserData = async (idToken) => {
+			const response = await fetch(`${apiBase}/user/info`, {
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${idToken}`,
+					"Content-Type": "application/json",
+				},
+			});
+			if (!response.ok) {
+				const text = await response.text().catch(() => "<no body>");
+				throw new Error(`API /user/info failed (${response.status}): ${text}`);
+			}
+			return response.json();
+		};
+
+		// GET /stats/moorecoins/total
+		// Returns shape: { moorecoins: <number> }
+		const globalStats = await fetch(`${apiBase}/stats/moorecoins/total`).then(res => res.json()).catch(() => ({ moorecoins: 0 }));
+		const totalMoorecoins = Number(globalStats?.moorecoins) || 0;
+
+		// Synchronous helper (no awaits needed)
+		const calculateValues = (total) => ({
+			exchangeRate: calculateExchangeRate(total),
+			interestRate: calculateInterestRate(total)
+		});
+
+		onAuthStateChanged(auth, async (user) => {
+			if (!user?.uid) {
+				window.location.href = "./index.html";
+				return;
+			}
+
+			try {
+				const idToken = await user.getIdToken();
+				currentIdToken = idToken;
+				const data = await getUserData(idToken);
+
+				const { exchangeRate, interestRate } = calculateValues(totalMoorecoins);
+				// expose to modal system
+				latestExchangeRate = exchangeRate;
+				refreshExchangeRateDisplay();
+				window.__latestInterestRate = interestRate;
+
+				// { balances:{ coins, totalEarned }, bond, flags:{admin}, profile:{displayName,email,photoURL,createdAt} }
+				const balances = data.balances || {};
+				const profile = data.profile || {};
+				const flags = data.flags || {};
+				const existingHour = (data.profile && data.profile.hour !== undefined) ? data.profile.hour : data.hour;
+
+				// Load active bond (if present) separately for consistent shape
+				try {
+					const bRes = await fetch(`${apiBase}/user/bond`, { headers:{ 'Authorization':`Bearer ${currentIdToken}` } });
+					const bJson = await bRes.json();
+					if (bRes.ok && bJson.bond && bJson.bond.redeemed === false){
+						window.__activeBond = bJson.bond;
+						enableBondView();
+					}
+				} catch(e){ console.warn('Bond fetch failed', e); }
+
+				const userMoorecoins = Number(balances.coins ?? data.coins ?? 0);
+				currentUserMoorecoins = userMoorecoins; // store globally for modals
+				const userEC = userMoorecoins * exchangeRate;
+
+				const displayName = (profile.displayName ?? data.displayName ?? user.displayName ?? "").trim();
+				const [firstName] = displayName.split(/\s+/);
+				document.getElementById("display-name").textContent = firstName || "Student";
+
+				const photoURL = profile.photoURL || data.photoURL || user.photoURL || "./img/default-profile-picture.svg";
+				document.getElementById("profile-pic").src = photoURL;
+				document.getElementById("profile-menu-avatar").src = photoURL;
+				document.getElementById("profile-menu-name").textContent = displayName || "Student";
+				document.getElementById("profile-menu-email").textContent = profile.email || data.email || user.email || "";
+				document.getElementById("moorecoins").textContent = userMoorecoins.toString();
+				document.getElementById("ec").textContent = userEC.toFixed(2);
+				document.getElementById("moorecoin-ec-value").textContent = exchangeRate.toFixed(2);
+				// Display 2-week bond ROI (principal + interest) as a percentage
+				document.getElementById("interest-rate-value").textContent = ((1 + interestRate) * 100).toFixed(2) + "%";
+
+				if (flags.admin) {
+					console.debug("Admin user detected (staying on student view)");
+					const adminBtn = document.getElementById('admin-console');
+					if (adminBtn) adminBtn.style.display = 'block';
+				}
+
+				// Onboarding: prompt for hour if missing
+				if (existingHour === undefined || existingHour === null) {
+					showHourOnboarding();
+				}
+			} catch (err) {
+				console.error(err);
+				auth.signOut();
+			}
+		})
+
+		function showHourOnboarding() {
+			if (window.__hourPromptShown) return; // avoid duplicate
+			window.__hourPromptShown = true;
+			const wrap = document.createElement('div');
+			wrap.innerHTML = `
+				<form id="hour-form" autocomplete="off">
+					<div class="notice" style="margin-bottom:14px;">
+						<strong>Class Hour Required</strong><br />Enter your Moorecoin class period (1-6). This can only be set once. You must confirm to continue using the dashboard.
+					</div>
+					<div class="form-row">
+						<label for="hour-input">Hour (1-6)</label>
+						<input id="hour-input" type="number" min="1" max="6" placeholder="e.g. 3" required />
+					</div>
+					<div class="form-row" style="flex-direction:row; align-items:center; gap:10px; margin-top:4px;">
+						<input id="hour-confirm" type="checkbox" />
+						<label for="hour-confirm" style="margin:0; font-size:.8rem;">I confirm this hour is correct and understand I cannot change it later.</label>
+					</div>
+					<div id="hour-status" class="inline-info" aria-live="polite" style="margin-top:8px;"></div>
+				</form>`;
+			const input = wrap.querySelector('#hour-input');
+			const confirm = wrap.querySelector('#hour-confirm');
+			const status = wrap.querySelector('#hour-status');
+			const modal = createModal({
+				title: 'Set Your Class Hour',
+				body: wrap,
+				initialFocus: '#hour-input',
+				actions: [
+					{
+						label: 'Confirm Hour', primary: true, closeOnResolve: false, onClick: async () => {
+							const val = input.value.trim();
+							const hour = Number(val);
+							if (!isValid()) { return; } // guard though button disabled
+							status.textContent = 'Saving hour…';
+							try {
+								const resp = await fetch(`${apiBase}/user/hour`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${currentIdToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ hour }) });
+								const json = await resp.json().catch(() => ({}));
+								if (!resp.ok) { status.textContent = json.error || 'Failed to save hour'; updateButton(); return; }
+								status.textContent = 'Hour saved. Thank you!';
+								confirmBtn.disabled = true;
+								setTimeout(() => { modal.close(); }, 550);
+							} catch (e) {
+								status.textContent = 'Network error saving hour';
+								updateButton();
+							}
+						}
+					}
+				]
+			});
+			// Get reference to confirm button inside modal
+			const confirmBtn = modal.dialog.querySelector('button.btn-primary');
+			function isValid() {
+				const v = input.value.trim();
+				if (v === '') return false;
+				const num = Number(v);
+				if (isNaN(num) || num < 1 || num > 6) return false;
+				if (!confirm.checked) return false;
+				return true;
+			}
+			function updateButton() {
+				if (isValid()) {
+					confirmBtn.disabled = false;
+				} else {
+					confirmBtn.disabled = true;
+				}
+			}
+			input.addEventListener('input', () => { updateButton(); status.textContent = ''; });
+			confirm.addEventListener('change', () => { updateButton(); });
+			updateButton(); // initial
+			// Hard block closing via overlay/Escape until saved
+			const originalClose = modal.close;
+			modal.close = () => {
+				if (!/Hour saved/i.test(status.textContent)) {
+					// If attempt to close (e.g. other code) while unsaved, refocus input
+					input.focus();
+					return;
+				}
+				originalClose();
+			};
+			// Block ESC key
+			document.addEventListener('keydown', function escBlock(e) {
+				if (e.key === 'Escape') {
+					if (!/Hour saved/i.test(status.textContent)) {
+						e.stopPropagation();
+						e.preventDefault();
+					} else {
+						document.removeEventListener('keydown', escBlock, true);
+					}
+				}
+			}, true);
+			// Block overlay click
+			if (modal.overlay) {
+				modal.overlay.addEventListener('click', e => {
+					if (e.target === modal.overlay && !/Hour saved/i.test(status.textContent)) {
+						e.stopPropagation();
+						e.preventDefault();
+					}
+				}, true);
+			}
+		}
+
+		function openExchangeModal() {
+			const wrapper = document.createElement('div');
+			wrapper.innerHTML = `
+				<form id="exchange-form" autocomplete="off">
+					<div class="form-row">
+						<label for="ex-moore">Moorecoins to exchange</label>
+						<input id="ex-moore" name="moorecoins" type="number" min="0" step="1" max="${currentUserMoorecoins}" inputmode="numeric" placeholder="0" />
+						<div class="inline-info">Rate: <span id="ex-rate">${latestExchangeRate.toFixed(2)}</span> EC per coin</div>
+					</div>
+					<div class="form-row">
+						<label for="ex-ec">You receive (EC)</label>
+						<input id="ex-ec" type="text" readonly placeholder="0.00" />
+					</div>
+					<div id="exchange-status" class="inline-info" aria-live="polite"></div>
+				</form>`;
+			const form = wrapper.querySelector('#exchange-form');
+			const inMoore = wrapper.querySelector('#ex-moore');
+			const outEC = wrapper.querySelector('#ex-ec');
+			inMoore.max = String(currentUserMoorecoins);
+			const statusEl = wrapper.querySelector('#exchange-status');
+			function recalc() {
+				let val = Number(inMoore.value || 0);
+				if (val > currentUserMoorecoins) {
+					val = currentUserMoorecoins;
+					inMoore.value = String(val);
+				}
+				outEC.value = (val * latestExchangeRate).toFixed(2);
+			}
+			inMoore.addEventListener('input', recalc);
+			return createModal({
+				title: 'Exchange Moorecoins',
+				body: wrapper,
+				initialFocus: '#ex-moore',
+				actions: [
+					{ label: 'Cancel', onClick: ({ close }) => close() },
+					{
+						label: 'Confirm Exchange', primary: true, onClick: async () => {
+							recalc();
+							if (!currentIdToken) { statusEl.textContent = 'Not authenticated.'; return; }
+							const amount = Number(inMoore.value || 0);
+							if (!amount || amount < 1) { statusEl.textContent = 'Enter an amount > 0'; return; }
+							if (amount > currentUserMoorecoins) { statusEl.textContent = 'Amount exceeds balance'; return; }
+							statusEl.textContent = 'Submitting exchange...';
+							try {
+								const resp = await fetch(`${apiBase}/purchase/exchange/${amount}`, {
+									method: 'POST',
+									headers: { 'Authorization': `Bearer ${currentIdToken}` }
+								});
+								console.log(resp);
+								const data = await resp.json().catch(() => ({}));
+								console.log(data);
+								if (!resp.ok) {
+									statusEl.textContent = data.error || 'Exchange failed';
+									return;
+								}
+								// Update balances
+								currentUserMoorecoins = Number(data.moorecoins ?? currentUserMoorecoins - amount);
+								document.getElementById('moorecoins').textContent = String(currentUserMoorecoins);
+								// Recompute EC display from updated balance
+								const newEC = currentUserMoorecoins * latestExchangeRate;
+								document.getElementById('ec').textContent = newEC.toFixed(2);
+								statusEl.textContent = `Exchange queued. Pending total: ${data.pendingExchange ?? amount}`;
+								// reset form
+								inMoore.value = '';
+								outEC.value = '';
+							} catch (e) {
+								console.error(e);
+								statusEl.textContent = 'Network / server error';
+							}
+						}
+					}
+				]
+			});
+		}
+
+		function openBondModal(currentInterest) {
+			if (window.__activeBond) { return openActiveBondModal(); }
+			const div = document.createElement('div');
+			div.innerHTML = `
+				<div class="notice"><strong>2-Week Bond:</strong> Lock coins to earn a ROI of <span class="value-chip badge-rate">${((1 + currentInterest) * 100).toFixed(2)}%</span> (includes principal).</div>
+				<hr />
+				<form id="bond-form">
+					<div class="form-row">
+						<label for="bond-amount">Amount of Moorecoins to bond</label>
+						<input id="bond-amount" type="number" min="1" step="1" max="${currentUserMoorecoins}" placeholder="100" />
+						<div class="inline-info" id="bond-limit-info"></div>
+					</div>
+					<div class="form-row two-col">
+						<div>
+							<label for="bond-term">Term</label>
+							<select id="bond-term" style="width:100%; background:#23262b; border:1px solid #30343a; padding:10px 12px; border-radius:10px; color:#f2f6fa;">
+								<option value="14" selected>14 days (standard)</option>
+							</select>
+						</div>
+						<div>
+							<label for="bond-estimate">Est. Payout (Moorecoins)</label>
+							<input id="bond-estimate" type="text" readonly placeholder="0" />
+						</div>
+					</div>
+					<div class="inline-info">Bonds auto-credit on maturity. Partial withdrawal not supported.</div>
+				</form>`;
+			const amount = div.querySelector('#bond-amount');
+			const estimate = div.querySelector('#bond-estimate');
+			const limitInfo = div.querySelector('#bond-limit-info');
+			if (typeof currentUserMoorecoins === 'number') {
+				amount.max = String(currentUserMoorecoins);
+				if (limitInfo) limitInfo.textContent = `Max: ${currentUserMoorecoins.toLocaleString()} available`;
+			}
+			function roundedPayout(v){ const raw = v * (1 + currentInterest); return Math.floor(raw + 0.5); }
+			function recalc() { const v = Number(amount.value || 0); estimate.value = v ? roundedPayout(v) : ''; }
+			amount.addEventListener('input', () => {
+				let v = Number(amount.value || 0);
+				if (v > currentUserMoorecoins) { v = currentUserMoorecoins; amount.value = String(v); }
+				if (v < 0) { v = 0; amount.value = ''; }
+				recalc();
+			});
+			amount.addEventListener('blur', () => { if (amount.value === '' || Number(amount.value) < 1) return; let v = Number(amount.value); if (v > currentUserMoorecoins) { amount.value = String(currentUserMoorecoins); } recalc(); });
+			return createModal({
+				title: 'Buy Bonds',
+				body: div,
+				initialFocus: '#bond-amount',
+				actions: [
+					{ label: 'Cancel', onClick: ({ close }) => close() },
+					{ label: 'Purchase Bond', primary: true, onClick: async () => {
+						const amt = Number(amount.value || 0); const term = Number(div.querySelector('#bond-term').value||14);
+						if (!amt || amt < 1) { return; }
+						try {
+							const resp = await fetch(`${apiBase}/purchase/bond`, { method:'POST', headers:{ 'Authorization':`Bearer ${currentIdToken}`, 'Content-Type':'application/json' }, body: JSON.stringify({ amount: amt, term }) });
+							const json = await resp.json();
+							if (!resp.ok) { console.error(json); return false; }
+							currentUserMoorecoins = json.moorecoins;
+							document.getElementById('moorecoins').textContent = String(currentUserMoorecoins);
+							window.__activeBond = json.bond;
+							enableBondView();
+						} catch(e){ console.error(e); return false; }
+					} }
+				]
+			});
+		}
+
+		function openActiveBondModal(){
+			const bond = window.__activeBond; if(!bond) return; const div = document.createElement('div');
+			const mat = new Date(bond.payoutAt);
+			const matured = bond.redeemed === true;
+			div.innerHTML = `
+				<div class="notice"><strong>${matured ? 'Bond Redeemed' : 'Active Bond'}</strong></div>
+				<p><strong>Amount Locked${matured ? ' (was)': ''}:</strong> ${Number(bond.amount).toLocaleString()} coins</p>
+				<p><strong>Interest Rate (ROI):</strong> ${(Number(bond.interestRate)*100).toFixed(2)}%</p>
+				<p><strong>Expected Payout:</strong> ${Number(bond.expectedReturn).toLocaleString(undefined,{maximumFractionDigits:6})} coins</p>
+				<p><strong>Maturity:</strong> ${mat.toLocaleString()}</p>
+				${matured ? `<p style="color:#37d28f;font-weight:600;">Credited at: ${new Date(bond.redeemedAt||bond.payoutAt).toLocaleString()}</p>` : '<p class="inline-info">Redemption credits automatically at maturity.</p>'}`;
+			createModal({ title:matured? 'Bond Redeemed':'Your Bond', body:div, actions:[{label:'Close'}] });
+		}
+
+		let bondCountdownTimer = null;
+		function startBondCountdown(){
+			const cdWrap = document.getElementById('bond-countdown');
+			const remainingSpan = document.getElementById('bond-remaining');
+			if(!window.__activeBond || window.__activeBond.redeemed){
+				cdWrap.style.display='none';
+				if(bondCountdownTimer) { clearInterval(bondCountdownTimer); bondCountdownTimer=null; }
+				return;
+			}
+			const payoutAt = new Date(window.__activeBond.payoutAt).getTime();
+			function render(){
+				const now = Date.now();
+				let diff = payoutAt - now;
+				if(diff <= 0){
+					remainingSpan.textContent = 'maturing...';
+					// Trigger a refresh to pick up lazy redemption
+					fetch(`${apiBase}/user/bond`, { headers:{'Authorization':`Bearer ${currentIdToken}`} })
+						.then(r=>r.json()).then(j=>{
+							if(j.bond && j.bond.redeemed){
+								window.__activeBond = j.bond;
+								cdWrap.style.display='none';
+								openActiveBondModal();
+								// Update balance (call /user/info for authoritative values)
+								return getUserData(currentIdToken).then(data=>{
+									const balances = data.balances||{}; const mc = Number(balances.coins ?? data.coins ?? 0);
+									currentUserMoorecoins = mc;
+									document.getElementById('moorecoins').textContent = mc.toString();
+									const ec = mc * latestExchangeRate; document.getElementById('ec').textContent = ec.toFixed(2);
+								});
+							}
+						}).catch(()=>{});
+					clearInterval(bondCountdownTimer); bondCountdownTimer=null;
+					return;
+				}
+				const days = Math.floor(diff / 86400000); diff %= 86400000;
+				const hours = Math.floor(diff / 3600000); diff %= 3600000;
+				const mins = Math.floor(diff / 60000); diff %= 60000;
+				const secs = Math.floor(diff / 1000);
+				const pad = n=>String(n).padStart(2,'0');
+				remainingSpan.textContent = `${days}d:${pad(hours)}h:${pad(mins)}m:${pad(secs)}s`;
+			}
+			cdWrap.style.display='block';
+			render();
+			if(bondCountdownTimer) clearInterval(bondCountdownTimer);
+			bondCountdownTimer = setInterval(render, 1000);
+		}
+
+		function enableBondView(){
+			const buyBtn = document.getElementById('buy-bonds');
+			const viewBtn = document.getElementById('view-bond');
+			if(window.__activeBond){
+				buyBtn.style.display='none'; viewBtn.style.display='inline-block';
+				startBondCountdown();
+			}else{
+				buyBtn.style.display='inline-block'; viewBtn.style.display='none';
+				document.getElementById('bond-countdown').style.display='none';
+			}
+		}
+
+		function openCasinoModal() {
+			const div = document.createElement('div');
+			div.innerHTML = `
+				<div class="notice">Welcome to the experimental Casino hub. Games here are <strong>risk simulations</strong> to teach probability & bankroll management.<br><br><span class="inline-info">Feature under construction.</span></div>
+				<hr />
+				<p style="margin:0 0 14px;font-size:.85rem;opacity:.8;">Soon you can pick from probability mini-games. For now this just navigates.</p>
+				<div class="upcoming-games" aria-label="Upcoming games list">
+					<header class="upcoming-header">
+						<h3>Upcoming Games</h3>
+						<span class="mini-tag">alpha roadmap</span>
+					</header>
+					<ul class="games-list">
+						<li class="game-item" data-game="blackjack">
+							<span class="game-title">Blackjack</span>
+							<small class="game-desc">Beat the dealer with probability insight.</small>
+						</li>
+						<li class="game-item" data-game="roulette">
+							<span class="game-title">Roulette</span>
+							<small class="game-desc">Explore variance & risk spreads.</small>
+						</li>
+						<li class="game-item" data-game="plinko">
+							<span class="game-title">Plinko</span>
+							<small class="game-desc">Visualize distribution curves.</small>
+						</li>
+						<li class="game-item" data-game="slots">
+							<span class="game-title">Slots</span>
+							<small class="game-desc">Understand expected value.</small>
+						</li>
+					</ul>
+				</div>`;
+			return createModal({
+				title: 'Casino Preview',
+				body: div,
+				actions: [{ label: 'Close', onClick: ({ close }) => close() }]
+			});
+		}
+
+		document.getElementById('exchange-button').addEventListener('click', openExchangeModal);
+		document.getElementById('buy-bonds').addEventListener('click', () => openBondModal(window.__latestInterestRate || 0));
+		document.getElementById('view-bond').addEventListener('click', openActiveBondModal);
+		// document.getElementById('casino-button').addEventListener('click', openCasinoModal);
+
+		// Dropdown logic
+		const profilePic = document.getElementById('profile-pic');
+		const menu = document.getElementById('profile-menu');
+		const signOutBtn = document.getElementById('sign-out');
+
+		function toggleMenu(forceState) {
+			const willShow = forceState ?? menu.classList.contains('hidden');
+			if (willShow) {
+				menu.classList.remove('hidden');
+				menu.setAttribute('aria-hidden', 'false');
+				// position (in case of scroll)
+				const rect = profilePic.getBoundingClientRect();
+				menu.style.top = `${rect.bottom + window.scrollY + 8}px`;
+				menu.style.right = `${window.innerWidth - rect.right - window.scrollX}px`;
+				// focus first item
+				const firstItem = menu.querySelector('.profile-menu-item');
+				firstItem?.focus({ preventScroll: true });
+			} else {
+				menu.classList.add('hidden');
+				menu.setAttribute('aria-hidden', 'true');
+			}
+		}
+
+		profilePic.addEventListener('click', (e) => {
+			e.stopPropagation();
+			toggleMenu();
+		});
+
+		document.addEventListener('click', (e) => {
+			if (!menu.classList.contains('hidden') && !menu.contains(e.target) && e.target !== profilePic) {
+				toggleMenu(false);
+			}
+		});
+
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && !menu.classList.contains('hidden')) {
+				toggleMenu(false);
+			}
+		});
+
+		signOutBtn.addEventListener('click', async () => {
+			try {
+				await auth.signOut();
+				window.location.href = './index.html';
+			} catch (err) {
+				console.error('Sign out failed', err);
+			}
+		});
+
+		const adminConsoleBtn = document.getElementById('admin-console');
+		if (adminConsoleBtn) {
+			adminConsoleBtn.addEventListener('click', () => {
+				window.location.href = './admin.html';
+			});
+		}
+
+		document.getElementById('view-profile').addEventListener('click', () => {
+			alert('Profile page coming soon');
+			toggleMenu(false);
+		});
+
+		(() => {
+			const el = document.getElementById('investor-splash');
+			if (!el) return;
+			const quotes = [
+				"Invest early, learn always.",
+				"Every Moorecoin is a vote for your future self.",
+				"Compound patience. The gains follow.",
+				"Cash flow > flashy purchases.",
+				"Own assets, not excuses.",
+				"Diversify like a property mogul—one square at a time.",
+				"Small consistent moves beat lucky windfalls.",
+				"Think in decades, act today.",
+				"Risk managed is opportunity unlocked.",
+				"Build reserves before you roll the dice.",
+				"Hold what compounds. Trade what teaches.",
+				"Liquidity is comfort; strategy is freedom.",
+				"Buy time. It's the rarest asset.",
+				"Protect principal. Grow upside.",
+				"Your best edge is disciplined boredom.",
+				"Analyze, allocate, adapt.",
+				"Own squares (assets) that pay you while you sleep.",
+				"Fortunes follow frameworks, not feelings.",
+				"Price is a snapshot; value is a story unfolding.",
+				"Upgrade your mindset before your lifestyle.",
+				"99% of gamblers quit before they win big.",
+				"There is no such thing as a free Moorecoin.",
+				"Opportunity cost is the coin you don't see."
+			];
+			let order = [];
+			let idx = 0;
+			function shuffle() {
+				order = quotes.map((_, i) => i).sort(() => Math.random() - 0.5);
+				idx = 0;
+			}
+			function scaleForLength(len) {
+				if (len <= 30) return 1.18;
+				if (len <= 55) return 1.08;
+				if (len <= 85) return 1.0;
+				if (len <= 120) return 0.94;
+				return 0.9;
+			}
+			let first = true;
+			function showNext() {
+				if (idx >= order.length) shuffle();
+				const q = quotes[order[idx++]];
+				const apply = () => {
+					const scale = scaleForLength(q.length);
+					el.style.setProperty('--q-scale', scale.toString());
+					el.textContent = q;
+					// trigger in state
+					requestAnimationFrame(() => {
+						el.classList.remove('transition-out');
+						el.classList.add('transition-in');
+					});
+				};
+				if (first) {
+					first = false;
+					apply();
+					return;
+				}
+				// transition out
+				el.classList.remove('transition-in');
+				el.classList.add('transition-out');
+				setTimeout(apply, 340);
+			}
+			shuffle();
+			showNext();
+			setInterval(showNext, 6200);
+		})();
+	</script>
+</body>
+
+</html>

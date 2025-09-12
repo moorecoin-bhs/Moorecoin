@@ -1,0 +1,32 @@
+body {
+  background: #f8f9fa;
+  color: #333;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+}
+
+h1 {
+  font-size: 3rem;
+  color: #d32f2f;
+  margin-bottom: 0.5em;
+}
+
+p {
+  font-size: 1.25rem;
+  color: #555;
+  margin-bottom: 2em;
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 2rem;
+  }
+  p {
+    font-size: 1rem;
+  }
+}

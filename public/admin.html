@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin Console • Moorecoin</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./admin.css" />
+    <link rel="icon" type="image/png" href="./img/favicon.png" />
+    <style>
+        /* Lightweight reuse of modal from dashboard to avoid duplication; override if needed. */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .55);
+            backdrop-filter: blur(3px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+            animation: fadeIn .18s ease;
+        }
+
+        .modal {
+            background: #1d1f23;
+            color: #fafafa;
+            border: 1px solid #2e3238;
+            border-radius: 14px;
+            width: min(560px, 94vw);
+            max-height: 82vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 6px 30px -6px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+            animation: scaleIn .24s cubic-bezier(.4, .6, .3, 1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(.94) translateY(6px);
+                opacity: 0
+            }
+
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1
+            }
+        }
+
+        .modal-header {
+            padding: 18px 22px 12px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            margin: 0;
+            font-weight: 600;
+            letter-spacing: .5px;
+        }
+
+        .modal-close {
+            margin-left: auto;
+            background: transparent;
+            border: 0;
+            color: #c7cdd6;
+            font-size: 1.25rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: background .15s;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus-visible {
+            background: #2b3138;
+            outline: none;
+        }
+
+        .modal-body {
+            padding: 8px 22px 20px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .modal-footer {
+            padding: 14px 22px 18px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            background: linear-gradient(#1d1f23, #181a1d);
+            border-top: 1px solid #292d33;
+        }
+
+        .modal-footer button {
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .btn-secondary {
+            background: #2c3138;
+            color: #f5f7fa;
+            border: 1px solid #394048;
+            padding: 9px 16px;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover {
+            background: #353b43;
+        }
+
+        .btn-primary {
+            background: linear-gradient(92deg, #4361ee, #3a86ff);
+            color: #fff;
+            border: 1px solid #3b5edb;
+            padding: 9px 16px;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.08);
+        }
+
+        .btn-secondary.btn-xs {
+            padding: 4px 8px;
+            font-size: .72rem;
+            line-height: 1.1;
+        }
+    </style>
+</head>
+
+<body class="admin-page">
+    <img src="./img/favicon.png" id="logo" alt="Logo" />
+    <img src="./img/default-profile-picture.svg" id="profile-pic" alt="Profile" />
+    <div id="profile-menu" class="profile-menu hidden" role="menu" aria-hidden="true">
+        <div class="profile-menu-header">
+            <img id="profile-menu-avatar" src="./img/default-profile-picture.svg" alt="Profile" />
+            <div class="profile-menu-text">
+                <span id="profile-menu-name">Admin</span>
+                <small id="profile-menu-email"></small>
+            </div>
+        </div>
+        <hr />
+        <button class="profile-menu-item" id="go-dashboard" role="menuitem">Student View</button>
+        <button class="profile-menu-item" id="sign-out" role="menuitem">Sign Out</button>
+    </div>
+
+    <main id="admin-shell" aria-live="polite">
+        <header class="admin-header">
+            <h1>Admin Console</h1>
+            <div class="section-tabs" role="tablist">
+                <button role="tab" aria-selected="true" id="tab-stats" data-target="panel-stats">General Stats</button>
+                <button role="tab" aria-selected="false" id="tab-settings"
+                    data-target="panel-settings">Settings</button>
+                <button role="tab" aria-selected="false" id="tab-users" data-target="panel-users">Users</button>
+                <button role="tab" aria-selected="false" id="tab-pending" data-target="panel-pending">Pending</button>
+            </div>
+        </header>
+        <section id="panel-stats" class="panel active" role="tabpanel" aria-labelledby="tab-stats">
+            <div class="cards" id="stats-cards">
+                <div class="card metric">
+                    <div class="label">Global Moorecoins</div>
+                    <div class="value" id="stat-global-coins">--</div>
+                </div>
+                <div class="card metric">
+                    <div class="label">Total Users</div>
+                    <div class="value" id="stat-total-users">--</div>
+                </div>
+                <div class="card metric">
+                    <div class="label">Exchange Rate</div>
+                    <div class="value" id="stat-exchange">--</div>
+                </div>
+                <div class="card metric">
+                    <div class="label">2W Bond ROI</div>
+                    <div class="value" id="stat-interest">--</div>
+                </div>
+            </div>
+            <div class="actions-row">
+                <button class="btn-primary" id="btn-adjust-global">Adjust Global Coins</button>
+                <button class="btn-secondary" id="btn-refresh-stats">Refresh</button>
+            </div>
+            <p class="inline-info" id="stats-status" aria-live="polite"></p>
+        </section>
+        <section id="panel-settings" class="panel" role="tabpanel" aria-labelledby="tab-settings" hidden>
+            <h2>Settings</h2>
+            <p class="inline-info">Feature scaffold - future administrative toggles & bond parameters will appear here.
+            </p>
+            <div class="card" style="max-width:480px;">
+                <h3 style="margin-top:0">Planned Controls</h3>
+                <ul class="planned">
+                    <li>Set base exchange decay coefficients</li>
+                    <li>Adjust default starting balance</li>
+                    <li>Toggle casino access</li>
+                </ul>
+            </div>
+        </section>
+        <section id="panel-users" class="panel" role="tabpanel" aria-labelledby="tab-users" hidden>
+            <div class="users-header">
+                <h2>Users</h2>
+                <div class="users-actions">
+                    <input type="search" id="user-search" placeholder="Search name/email" aria-label="Search users" />
+                    <select id="user-sort" aria-label="Sort field" title="Sort field">
+                        <option value="coins">Coins</option>
+                        <option value="totalEarned">Total Earned</option>
+                        <option value="createdAt">Created</option>
+                        <option value="name">Name</option>
+                    </select>
+                    <button class="btn-secondary" id="btn-sort-dir" data-dir="desc" title="Toggle sort direction">Desc
+                        ↓</button>
+                    <button class="btn-secondary" id="btn-reload-users" title="Reload list">Reload</button>
+                    <button class="btn-primary" id="btn-hour-award" title="Award coins to an hour"
+                        style="background:linear-gradient(92deg,#ff914d,#ff6000); border-color:#ff7a2b;">Award
+                        Hour</button>
+                </div>
+            </div>
+            <div class="table-wrap" tabindex="0">
+                <table id="users-table" aria-describedby="users-caption">
+                    <caption id="users-caption">Current users</caption>
+                    <thead>
+                        <tr>
+                            <th>Avatar</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Coins</th>
+                            <th>Total Earned</th>
+                            <th>Hour</th>
+                            <th>Admin</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <tr>
+                            <td colspan="6" style="text-align:center; opacity:.7;">Loading…</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="inline-info" id="users-status" aria-live="polite"></p>
+        </section>
+        <section id="panel-pending" class="panel" role="tabpanel" aria-labelledby="tab-pending" hidden>
+            <div class="users-header">
+                <h2>Pending Transactions</h2>
+                <div class="users-actions">
+                    <button class="btn-secondary" id="btn-reload-pending" title="Reload pending list">Reload</button>
+                </div>
+            </div>
+            <div class="table-wrap" tabindex="0">
+                <table id="pending-table" aria-describedby="pending-caption">
+                    <caption id="pending-caption">Pending exchanges awaiting conversion to extra credit</caption>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Coins</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-tbody">
+                        <tr><td colspan="4" style="text-align:center; opacity:.7;">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="inline-info" id="pending-status" aria-live="polite"></p>
+        </section>
+    </main>
+
+    <footer>
+        <div id="footer-content">
+            <a href="https://github.com/halleyscommet/moorecoin" target="_blank">Source</a>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { app, apiBase, calculateExchangeRate, calculateInterestRate } from './app.js?v=1';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
+        const auth = getAuth(app);
+        let currentIdToken = null;
+
+        const DEFAULT_AVATAR = './img/default-profile-picture.svg';
+        function safeSetAvatar(img, url) {
+            if (!img) return;
+            img.referrerPolicy = 'no-referrer';
+            img.decoding = 'async';
+            img.loading = 'lazy';
+            img.onerror = () => { if (img.src !== DEFAULT_AVATAR) { img.src = DEFAULT_AVATAR; } };
+            if (!url) { img.src = DEFAULT_AVATAR; return; }
+            // Avoid re-request if already same
+            if (img.dataset.originalSrc === url) return;
+            img.dataset.originalSrc = url;
+            img.src = url;
+        }
+
+        // Modal factory (trimmed variant from dashboard)
+        let openModalRef = null;
+        function createModal({ title, body, actions = [], initialFocus }) {
+            if (openModalRef) openModalRef.close();
+            const overlay = document.createElement('div'); overlay.className = 'modal-overlay';
+            const dialog = document.createElement('div'); dialog.className = 'modal'; dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true');
+            const header = document.createElement('div'); header.className = 'modal-header';
+            const h2 = document.createElement('h2'); h2.textContent = title; header.append(h2);
+            const closeBtn = document.createElement('button'); closeBtn.className = 'modal-close'; closeBtn.innerHTML = '&times;'; closeBtn.addEventListener('click', () => close()); header.append(closeBtn);
+            const bodyWrap = document.createElement('div'); bodyWrap.className = 'modal-body'; if (typeof body === 'string') bodyWrap.innerHTML = body; else bodyWrap.append(body);
+            const footer = document.createElement('div'); footer.className = 'modal-footer';
+            if (!actions.length) { const b = document.createElement('button'); b.textContent = 'Close'; b.className = 'btn-secondary'; b.onclick = () => close(); footer.append(b); } else { actions.forEach(cfg => { const b = document.createElement('button'); b.textContent = cfg.label; b.className = cfg.primary ? 'btn-primary' : 'btn-secondary'; b.type = cfg.type || 'button'; b.onclick = () => cfg.onClick?.({ close }) !== false && cfg.closeOnClick !== false && close(); footer.append(b); }); }
+            dialog.append(header, bodyWrap, footer); overlay.append(dialog);
+            function close() { overlay.remove(); openModalRef = null; }
+            document.body.append(overlay); setTimeout(() => { (initialFocus ? dialog.querySelector(initialFocus) : dialog.querySelector('button'))?.focus(); }, 20); openModalRef = { close, overlay, dialog }; return openModalRef;
+        }
+
+        // Tab logic
+        const tabs = Array.from(document.querySelectorAll('.section-tabs [role=tab]'));
+        function activateTab(btn) {
+            if (!btn) return;
+            tabs.forEach(t => {
+                const panelId = t.dataset.target;
+                const panel = document.getElementById(panelId);
+                const active = t === btn;
+                t.setAttribute('aria-selected', String(active));
+                if (panel) {
+                    if (active) {
+                        panel.classList.add('active');
+                        panel.removeAttribute('hidden');
+                        if (panelId === 'panel-pending') { loadPending(); }
+                    } else {
+                        panel.classList.remove('active');
+                        panel.setAttribute('hidden', '');
+                    }
+                }
+            });
+            btn.focus();
+        }
+        tabs.forEach(t => t.addEventListener('click', () => activateTab(t)));
+        document.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { const i = tabs.indexOf(document.activeElement); if (i > -1) { const dir = e.key === 'ArrowRight' ? 1 : -1; let ni = (i + dir + tabs.length) % tabs.length; activateTab(tabs[ni]); } } });
+
+        // Data loaders
+        async function loadStats() {
+            const status = document.getElementById('stats-status'); status.textContent = 'Loading stats…';
+            try {
+                const [gRes, uRes] = await Promise.all([
+                    fetch(`${apiBase}/stats/moorecoins/total`),
+                    fetch(`${apiBase}/stats/users/total`)
+                ]);
+                const gJson = await gRes.json(); const uJson = await uRes.json();
+                const totalCoins = Number(gJson.moorecoins || 0); const totalUsers = Number(uJson.total || 0);
+                document.getElementById('stat-global-coins').textContent = totalCoins.toLocaleString();
+                document.getElementById('stat-total-users').textContent = totalUsers.toLocaleString();
+                document.getElementById('stat-exchange').textContent = calculateExchangeRate(totalCoins).toFixed(3);
+                document.getElementById('stat-interest').textContent = ((1 + calculateInterestRate(totalCoins)) * 100).toFixed(2) + '%';
+                status.textContent = '';
+            } catch (e) { console.error(e); status.textContent = 'Failed to load stats'; }
+        }
+
+        let currentSortField = 'coins';
+        let currentSortDir = 'desc';
+
+        async function loadPending() {
+            const tbody = document.getElementById('pending-tbody'); const status = document.getElementById('pending-status');
+            if (!tbody) return; // panel not present
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; opacity:.7;">Loading…</td></tr>';
+            status.textContent = 'Fetching pending…';
+            try {
+                if (!currentIdToken) throw new Error('Not authed');
+                const res = await fetch(`${apiBase}/admin/pending`, { headers: { Authorization: `Bearer ${currentIdToken}` } });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.error || 'Request failed');
+                const list = json.pending || [];
+                if (!list.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; opacity:.6;">No pending transactions</td></tr>'; status.textContent = 'None'; return; }
+                const totalCoins = list.reduce((a, b) => a + (b.amount || 0), 0);
+                status.textContent = `${list.length} pending • ${totalCoins.toLocaleString()} coins total`;
+                tbody.innerHTML = list.map(p => {
+                    const name = p.displayName || '(no name)';
+                    const email = p.email ? `<a href="https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(p.email)}" target="_blank" rel="noopener" class="email-link">${p.email}</a>` : '';
+                    return `<tr data-uid="${p.uid}"><td>${name}</td><td>${email}</td><td class="num">${Number(p.amount||0).toLocaleString()}</td><td style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button class="btn-secondary btn-xs" data-action="view" title="View extra credit">View</button>
+                        <button class="btn-secondary btn-xs" data-action="copy" title="Copy extra credit value">Copy</button>
+                        <button class="btn-secondary btn-xs" data-action="clear" title="Clear from pending" style="background:#3a1f1f; border-color:#5a2b2b;">Clear</button>
+                    </td></tr>`;
+                }).join('');
+            } catch (e) { console.error(e); status.textContent = 'Failed: ' + e.message; }
+        }
+
+        document.getElementById('btn-reload-pending')?.addEventListener('click', loadPending);
+
+        // Delegate actions in pending table
+        document.addEventListener('click', async e => {
+            const btn = e.target.closest('#pending-table button[data-action]');
+            if (!btn) return;
+            const tr = btn.closest('tr');
+            const uid = tr?.dataset.uid; if (!uid) return;
+            const amountCell = tr.querySelector('td:nth-child(3)');
+            const coins = parseInt((amountCell?.textContent||'').replace(/[,]/g,'')) || 0;
+            const exchangeRate = Number(document.getElementById('stat-exchange')?.textContent) || 0; // Already loaded approximated
+            const action = btn.dataset.action;
+            if (action === 'view') {
+                const extra = (coins * exchangeRate).toFixed(2);
+                createModal({ title: 'Extra Credit Preview', body: `<p>${coins.toLocaleString()} coins at current rate (${exchangeRate.toFixed(3)}) ≈ <strong>${extra}</strong> extra credit points.</p><p style='font-size:.8rem; opacity:.7;'>Rate is dynamic; snapshot this before entering gradebook.</p>` });
+            } else if (action === 'copy') {
+                const extra = (coins * exchangeRate).toFixed(2);
+                try { await navigator.clipboard.writeText(extra); btn.textContent = 'Copied'; setTimeout(()=> btn.textContent='Copy', 1800); } catch { btn.textContent='Err'; setTimeout(()=> btn.textContent='Copy', 1800); }
+            } else if (action === 'clear') {
+                if (!confirm('Remove this pending entry?')) return;
+                btn.disabled = true; btn.textContent = '…';
+                try {
+                    const resp = await fetch(`${apiBase}/admin/pending/${uid}`, { method:'DELETE', headers:{ Authorization:`Bearer ${currentIdToken}` } });
+                    const json = await resp.json();
+                    if (!resp.ok) throw new Error(json.error||'Failed');
+                    tr.remove();
+                    // Update status counts
+                    loadPending();
+                } catch (err) { console.error(err); btn.textContent='Err'; setTimeout(()=> btn.textContent='Clear', 1600); btn.disabled=false; }
+            }
+        });
+
+        async function loadUsers() {
+            const tbody = document.getElementById('users-tbody'); const status = document.getElementById('users-status');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; opacity:.7;">Loading…</td></tr>';
+            status.textContent = 'Fetching users…';
+            try {
+                if (!currentIdToken) throw new Error('Not authed');
+                const params = new URLSearchParams({ limit: '200', order: currentSortField, dir: currentSortDir });
+                const res = await fetch(`${apiBase}/admin/users?${params.toString()}`, { headers: { Authorization: `Bearer ${currentIdToken}` } });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.error || 'Request failed');
+                const users = json.users || [];
+                status.textContent = `Loaded ${users.length} users`;
+                tbody.innerHTML = users.map(u => `<tr data-uid="${u.uid}" class="user-row" tabindex="0" title="Click to edit">
+						<td><img data-avatar="1" data-src="${u.photoURL || ''}" alt="" class="avatar-sm" /></td>
+						<td>${u.displayName || '(no name)'}</td>
+                        <td>${u.email ? `<a href="https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(u.email)}" target="_blank" rel="noopener" class="email-link" draggable="false" data-email="${u.email}">${u.email}</a>` : ''}</td>
+						<td class="num">${Number(u.coins || 0).toLocaleString()}</td>
+						<td class="num">${u.totalEarned !== undefined ? Number(u.totalEarned || 0).toLocaleString() : '—'}</td>
+						<td class="num">${u.hour !== undefined && u.hour !== null ? u.hour : ''}</td>
+						<td>${u.admin ? '<span class="chip chip-admin">ADMIN</span>' : ''}</td>
+					</tr>`).join('');
+                // Apply avatar loading with fallback
+                [...tbody.querySelectorAll('img[data-avatar]')].forEach(img => {
+                    const src = img.getAttribute('data-src');
+                    safeSetAvatar(img, src);
+                });
+                // Ensure Gmail links have properly encoded email
+                tbody.querySelectorAll('a.email-link[data-email]').forEach(a => {
+                    const em = a.getAttribute('data-email');
+                    if (em) {
+                        a.href = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(em)}`;
+                    }
+                });
+                // Row click to edit
+                tbody.querySelectorAll('tr.user-row').forEach(row => {
+                    row.addEventListener('click', (e) => {
+                        if (e.target.closest('a.email-link')) return; // allow mailto
+                        openEditUser(row.dataset.uid, row);
+                    });
+                    row.addEventListener('keydown', e => {
+                        if (e.target.closest('a.email-link')) return; // don't hijack link keyboard
+                        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEditUser(row.dataset.uid, row); }
+                    });
+                });
+            } catch (e) { console.error(e); status.textContent = 'Failed: ' + e.message; }
+        }
+
+        // Search filter
+        document.getElementById('user-search').addEventListener('input', e => {
+            const q = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#users-tbody tr');
+            rows.forEach(r => { const text = r.textContent.toLowerCase(); r.style.display = text.includes(q) ? '' : 'none'; });
+        });
+
+        document.getElementById('btn-reload-users').addEventListener('click', loadUsers);
+        document.getElementById('btn-refresh-stats').addEventListener('click', loadStats);
+        document.getElementById('user-sort').addEventListener('change', e => { currentSortField = e.target.value; loadUsers(); });
+        document.getElementById('btn-sort-dir').addEventListener('click', e => { currentSortDir = e.currentTarget.dataset.dir === 'desc' ? 'asc' : 'desc'; e.currentTarget.dataset.dir = currentSortDir; e.currentTarget.textContent = currentSortDir === 'desc' ? 'Desc ↓' : 'Asc ↑'; loadUsers(); });
+        document.getElementById('btn-hour-award').addEventListener('click', () => openHourAward());
+
+        function openHourAward() {
+            const wrap = document.createElement('div');
+            wrap.innerHTML = `
+                <form id="hour-award-form" autocomplete="off">
+                    <div class="form-row">
+                        <label for="award-hour">Hour (1-6)</label>
+                        <input id="award-hour" type="number" min="1" max="6" placeholder="e.g. 3" style="width:100%; background:#23262b; border:1px solid #30343a; padding:10px 12px; border-radius:10px; color:#f2f6fa;" required />
+                    </div>
+                    <div class="form-row">
+                        <label for="award-coins">Coins per user</label>
+                        <input id="award-coins" type="number" min="1" step="1" placeholder="50" style="width:100%; background:#23262b; border:1px solid #30343a; padding:10px 12px; border-radius:10px; color:#f2f6fa;" required />
+                    </div>
+                    <div class="inline-info">Adds coins to every student whose profile hour matches. Irreversible.</div>
+                    <div id="hour-award-status" class="inline-info" style="margin-top:8px; min-height:14px;"></div>
+                </form>`;
+            const hourInput = wrap.querySelector('#award-hour');
+            const coinsInput = wrap.querySelector('#award-coins');
+            const status = wrap.querySelector('#hour-award-status');
+            createModal({
+                title: 'Award Coins To Hour',
+                body: wrap,
+                initialFocus: '#award-hour',
+                actions: [
+                    { label: 'Cancel' },
+                    {
+                        label: 'Award', primary: true, onClick: async () => {
+                            const h = parseInt(hourInput.value, 10);
+                            const c = parseInt(coinsInput.value, 10);
+                            if (isNaN(h) || h < 1 || h > 6) { status.textContent = 'Hour must be 1-6'; return false; }
+                            if (isNaN(c) || c < 1) { status.textContent = 'Coins must be > 0'; return false; }
+                            status.textContent = 'Processing…';
+                            try {
+                                const resp = await fetch(`${apiBase}/admin/hour/award`, { method: 'POST', headers: { 'Authorization': `Bearer ${currentIdToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ hour: h, coins: c }) });
+                                const json = await resp.json();
+                                if (!resp.ok) { status.textContent = json.error || 'Failed'; return false; }
+                                status.textContent = `Awarded ${json.coinsPerUser} to ${json.userCount} users (total ${json.totalAwarded}).`;
+                                loadUsers();
+                                loadStats();
+                            } catch (e) { status.textContent = 'Network error'; return false; }
+                        }
+                    }
+                ]
+            });
+        }
+
+        async function openEditUser(uid, rowEl) {
+            if (!uid) return;
+            const coinsCell = rowEl?.querySelector('td:nth-child(4)');
+            const earnedCell = rowEl?.querySelector('td:nth-child(5)');
+            const hourCell = rowEl?.querySelector('td:nth-child(6)');
+            const adminCell = rowEl?.querySelector('td:nth-child(7)');
+            const currentCoins = coinsCell ? parseInt(coinsCell.textContent.replace(/[,]/g, '')) : 0;
+            const currentHour = hourCell ? (hourCell.textContent.trim() || '') : '';
+            const isAdmin = !!adminCell?.querySelector('.chip-admin');
+            const wrap = document.createElement('div');
+            wrap.innerHTML = `
+                <form id="edit-user-form" autocomplete="off">
+                    <div class="form-row">
+                        <label for="edit-coins">Coins</label>
+                        <input id="edit-coins" type="number" step="1" value="${currentCoins}" style="width:100%; background:#23262b; border:1px solid #30343a; padding:10px 12px; border-radius:10px; color:#f2f6fa;" />
+                    </div>
+                    <div class="form-row">
+                        <label for="edit-hour">Hour (class period)</label>
+                        <input id="edit-hour" type="number" min="0" max="24" value="${currentHour}" placeholder="e.g. 3" style="width:100%; background:#23262b; border:1px solid #30343a; padding:10px 12px; border-radius:10px; color:#f2f6fa;" />
+                        <div class="inline-info">Leave blank to clear.</div>
+                    </div>
+                    <div class="form-row" style="margin-top:12px; display:flex; align-items:center; gap:8px;">
+                        <input id="edit-admin" type="checkbox" ${isAdmin ? 'checked' : ''} /> <label for="edit-admin" style="margin:0;">Admin</label>
+                    </div>
+                    <div id="edit-user-status" class="inline-info" style="margin-top:10px;"></div>
+                </form>`;
+            const coinsInput = wrap.querySelector('#edit-coins');
+            const hourInput = wrap.querySelector('#edit-hour');
+            const adminInput = wrap.querySelector('#edit-admin');
+            const status = wrap.querySelector('#edit-user-status');
+            createModal({
+                title: `Edit User ${uid.substring(0, 6)}…`, body: wrap, initialFocus: '#edit-coins', actions: [
+                    { label: 'Cancel' },
+                    {
+                        label: 'Save', primary: true, onClick: async () => {
+                            const newCoins = parseInt(coinsInput.value);
+                            if (isNaN(newCoins)) { status.textContent = 'Enter valid coins'; return false; }
+                            const hourVal = hourInput.value.trim();
+                            let hourParsed = null;
+                            if (hourVal !== '') {
+                                const parsed = parseInt(hourVal, 10);
+                                if (isNaN(parsed)) { status.textContent = 'Hour must be number'; return false; }
+                                hourParsed = parsed;
+                            }
+                            const newAdmin = adminInput.checked;
+                            status.textContent = 'Saving…';
+                            try {
+                                const body = { coins: newCoins, admin: newAdmin };
+                                if (hourVal === '') body.hour = ""; else body.hour = hourParsed;
+                                const res = await fetch(`${apiBase}/admin/users/${uid}`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${currentIdToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                                const json = await res.json();
+                                console.log(res, json)
+                                if (!res.ok) throw new Error(json.error || 'Failed');
+                                status.textContent = 'Updated';
+                                // Update row inline without reload for snappy UX
+                                if (coinsCell) coinsCell.textContent = Number(json.coins || 0).toLocaleString();
+                                if (hourCell) hourCell.textContent = (json.hour !== undefined && json.hour !== null) ? json.hour : '';
+                                if (adminCell) adminCell.innerHTML = json.admin ? '<span class="chip chip-admin">ADMIN</span>' : '';
+                                loadStats(); // reflect global change if delta
+                            } catch (e) { status.textContent = 'Error: ' + e.message; return false; }
+                        }
+                    }
+                ]
+            });
+        }
+
+        // Adjust global coins modal
+        document.getElementById('btn-adjust-global').addEventListener('click', () => {
+            const wrap = document.createElement('div');
+            wrap.innerHTML = `
+				<form id="adj-form" autocomplete="off">
+					<div class="form-row">
+						<label for="delta">Add/Subtract Coins</label>
+						<input id="delta" type="number" step="1" placeholder="100" style="width:100%; background:#23262b; border:1px solid #30343a; padding:10px 12px; border-radius:10px; color:#f2f6fa;" />
+						<div class="inline-info">Use negative number to subtract.</div>
+					</div>
+					<div id="adj-status" class="inline-info"></div>
+				</form>`;
+            const delta = wrap.querySelector('#delta'); const status = wrap.querySelector('#adj-status');
+            createModal({
+                title: 'Adjust Global Moorecoins', body: wrap, initialFocus: '#delta', actions: [
+                    { label: 'Cancel' },
+                    {
+                        label: 'Apply Change', primary: true, onClick: async ({ close }) => {
+                            const val = Number(delta.value); if (!val) { status.textContent = 'Enter a non-zero integer'; return false; }
+                            status.textContent = 'Applying…';
+                            try {
+                                const res = await fetch(`${apiBase}/stats/moorecoins/edit`, { method: 'POST', headers: { 'Authorization': `Bearer ${currentIdToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ moorecoins: val }) });
+                                const json = await res.json(); if (!res.ok) throw new Error(json.error || 'Failed');
+                                status.textContent = 'Success. New total: ' + json.moorecoins;
+                                loadStats();
+                            } catch (e) { status.textContent = 'Error: ' + e.message; return false; }
+                        }
+                    }
+                ]
+            });
+        });
+
+        // Auth & profile
+        onAuthStateChanged(auth, async user => {
+            if (!user) { window.location.href = './index.html'; return; }
+            try { currentIdToken = await user.getIdToken(); } catch (e) { console.error(e); }
+            // Verify admin via user doc
+            try {
+                const infoRes = await fetch(`${apiBase}/user/info`, { headers: { Authorization: `Bearer ${currentIdToken}` } });
+                const info = await infoRes.json();
+                const isAdmin = info?.flags?.admin || info?.admin;
+                if (!isAdmin) { window.location.href = './dashboard.html'; return; }
+                // Populate profile from richer info if available
+                safeSetAvatar(document.getElementById('profile-pic'), info.profile?.photoURL || user.photoURL);
+                safeSetAvatar(document.getElementById('profile-menu-avatar'), info.profile?.photoURL || user.photoURL);
+                document.getElementById('profile-menu-name').textContent = info.profile?.displayName || user.displayName || 'Admin';
+                document.getElementById('profile-menu-email').textContent = info.profile?.email || user.email || '';
+            } catch (e) { console.error('Admin check failed', e); window.location.href = './dashboard.html'; return; }
+            await loadStats();
+            await loadUsers();
+            // Preload pending in background (non-blocking)
+            loadPending();
+        });
+
+        // dropdown menu reuse
+        const profilePic = document.getElementById('profile-pic');
+        const menu = document.getElementById('profile-menu');
+        profilePic.addEventListener('click', e => { e.stopPropagation(); const hidden = menu.classList.contains('hidden'); menu.classList.toggle('hidden', !hidden); menu.setAttribute('aria-hidden', String(!hidden)); if (!hidden) { return; } const rect = profilePic.getBoundingClientRect(); menu.style.top = `${rect.bottom + window.scrollY + 8}px`; menu.style.right = `${window.innerWidth - rect.right - window.scrollX}px`; });
+        document.addEventListener('click', e => { if (!menu.classList.contains('hidden') && !menu.contains(e.target) && e.target !== profilePic) { menu.classList.add('hidden'); menu.setAttribute('aria-hidden', 'true'); } });
+        document.getElementById('sign-out').addEventListener('click', async () => { try { await auth.signOut(); window.location.href = './index.html'; } catch (e) { console.error(e); } });
+        document.getElementById('go-dashboard').addEventListener('click', () => { window.location.href = './dashboard.html'; });
+    </script>
+</body>
+
+</html>

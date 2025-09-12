@@ -1,0 +1,455 @@
+#logo {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  height: 56px;
+  width: auto;
+  z-index: 10;
+  opacity: 0.85;
+}
+
+#profile-pic {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  height: 56px;
+  width: auto;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  border: 2px solid #ff6000;
+  background: #fff;
+  z-index: 10;
+}
+
+/* Profile dropdown */
+.profile-menu.hidden {
+  display: none;
+}
+.profile-menu {
+  position: absolute;
+  top: 84px; /* default, will be recalculated in JS */
+  right: 20px;
+  min-width: 220px;
+  background: #1e1f21;
+  color: #fff;
+  border: 1px solid #2c2d30;
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.2);
+  padding: 10px 0 8px 0;
+  z-index: 200;
+  font-family: "Segoe UI", "Arial", sans-serif;
+  animation: fadeScale 0.14s ease;
+}
+
+@keyframes fadeScale {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.profile-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 16px 10px 16px;
+}
+.profile-menu-header img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ff6000;
+  background: #fff;
+}
+.profile-menu-text span {
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: block;
+}
+.profile-menu-text small {
+  font-size: 0.7rem;
+  opacity: 0.75;
+  user-select: text;
+}
+.profile-menu hr {
+  border: none;
+  border-top: 1px solid #2c2d30;
+  margin: 0 0 4px 0;
+}
+.profile-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  color: #e6e6e6;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1.1rem;
+  transition: background 0.15s, color 0.15s;
+}
+.profile-menu-item:hover,
+.profile-menu-item:focus {
+  outline: none;
+  background: #2a2c30;
+  color: #fff;
+}
+.profile-menu-item:active {
+  background: #232528;
+}
+
+@media (max-width: 600px) {
+  .profile-menu {
+    right: 10px;
+    min-width: 200px;
+  }
+  .profile-menu-header img {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+#welcome-container {
+  margin-top: 100px;
+  text-align: center;
+}
+
+#investor-splash {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) scale(var(--q-scale)) translateZ(0);
+  margin: 0;
+  max-width: min(640px, calc(100% - 260px)); /* leave space for logo + avatar */
+  padding: 6px 18px 8px 18px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: "Segoe UI", Arial, sans-serif;
+  line-height: 1.25rem;
+  color: #ffcbad;
+  letter-spacing: 0.35px;
+  background: linear-gradient(135deg, rgba(255,96,0,0.16), rgba(255,145,77,0.05));
+  border: 1px solid rgba(255,145,77,0.28);
+  border-radius: 11px;
+  backdrop-filter: blur(5px) saturate(115%);
+  -webkit-backdrop-filter: blur(5px) saturate(115%);
+  box-shadow: 0 4px 14px -6px rgba(0,0,0,0.55), 0 1px 4px -1px rgba(0,0,0,0.35);
+  --q-scale: 1;
+  transition: transform 0.5s cubic-bezier(.55,.15,.25,1),
+              letter-spacing 0.5s ease,
+              color 0.5s ease;
+  overflow: hidden;
+  isolation: isolate;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  /* enable wrapping on very small screens */
+}
+
+#investor-splash::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 28% 40%, rgba(255,145,77,0.18), transparent 60%),
+              radial-gradient(circle at 80% 70%, rgba(255,96,0,0.18), transparent 65%);
+  opacity: 0.55;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+#investor-splash.transition-out { animation: splashOut 0.35s forwards ease; }
+#investor-splash.transition-in { animation: splashIn 0.65s forwards cubic-bezier(.35,.8,.25,1); }
+
+@keyframes splashOut {
+  0% { opacity: 1; filter: blur(0); transform: translateX(-50%) scale(var(--q-scale)) translateY(0); }
+  60% { opacity: 0; filter: blur(5px); }
+  100% { opacity: 0; filter: blur(10px); transform: translateX(-50%) scale(var(--q-scale)*0.94) translateY(-4px); }
+}
+@keyframes splashIn {
+  0% { opacity: 0; filter: blur(10px); transform: translateX(-50%) scale(calc(var(--q-scale)*1.05)) translateY(6px); }
+  45% { opacity: .9; filter: blur(2px); }
+  100% { opacity: 1; filter: blur(0); transform: translateX(-50%) scale(var(--q-scale)) translateY(0); }
+}
+
+#balance-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 64px;
+  /* Pull conversion chart closer by reducing bottom margin */
+  margin: 32px 0 6px 0;
+  font-size: 1.3rem;
+  font-family: "Segoe UI", "Arial", sans-serif;
+}
+
+#balance-container .subtext {
+  margin: 0;
+  padding: 0;
+  font-size: 1.4rem;
+  color: #ccc;
+  user-select: none;
+}
+
+.balance-item {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0 8px;
+  text-align: center;
+  min-width: unset;
+  font-size: 2rem;
+  color: #fff;
+  font-weight: 500;
+  display: inline;
+}
+
+.balance-symbol {
+  font-size: 1.4rem;
+  color: #ff914d;
+  font-weight: bold;
+  margin: 0 18px;
+  user-select: none;
+}
+
+#moorecoin-value-container {
+  margin-bottom: 8rem;
+  text-align: center;
+}
+
+#moorecoin-value {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+#interest-rate {
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: #ff914d;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+#button-container {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+#exchange-button,
+#buy-bonds,
+#casino-button,
+#view-bond {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background-color: #131314;
+  color: #e3e3e3;
+  border: 1px solid #8e918f;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-family: "Roboto", arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  height: 44px;
+  min-width: 120px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.218s, border-color 0.218s, box-shadow 0.218s;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+#exchange-button:disabled,
+#buy-bonds:disabled,
+#casino-button:disabled,
+#view-bond:disabled {
+  cursor: default;
+  background-color: #13131461;
+  border-color: #8e918f1f;
+  color: #e3e3e3a0;
+}
+
+#exchange-button:not(:disabled):hover,
+#buy-bonds:not(:disabled):hover,
+#casino-button:not(:disabled):hover,
+#view-bond:not(:disabled):hover {
+  box-shadow: 0 2px 8px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  background-color: #232325;
+}
+
+#exchange-button:not(:disabled):active,
+#buy-bonds:not(:disabled):active,
+#casino-button:not(:disabled):active,
+#view-bond:not(:disabled):active {
+  background-color: #18181a;
+}
+
+#exchange-button .button-icon,
+#buy-bonds .button-icon,
+#casino-button .button-icon,
+#view-bond .button-icon {
+  height: 20px;
+  width: 20px;
+  margin-right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+footer {
+  width: 100vw;
+  background: #222;
+  color: #fff;
+  padding: 18px 0 10px 0;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 50;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#footer-content {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  font-size: 1rem;
+  flex-wrap: wrap;
+}
+#footer-content a {
+  color: #ff6000;
+  text-decoration: underline;
+  margin-left: 4px;
+}
+
+/* Upcoming games (casino modal) */
+.upcoming-games {
+  background: linear-gradient(135deg, #1d2023, #181a1c);
+  border: 1px solid #2a2e33;
+  padding: 14px 16px 16px;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px -6px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.35);
+  position: relative;
+}
+.upcoming-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+}
+.upcoming-header h3 {
+  font-size: .9rem;
+  margin: 0;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  background: linear-gradient(90deg,#ff914d,#ff6000);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.mini-tag {
+  font-size: .55rem;
+  background: #2d3238;
+  padding: 4px 8px 5px;
+  border-radius: 999px;
+  letter-spacing: 1px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #cdd3da;
+}
+.games-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
+  gap: 10px 12px;
+}
+.game-item {
+  background: #22262b;
+  border: 1px solid #2d3238;
+  border-radius: 12px;
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  cursor: default;
+  overflow: hidden;
+  isolation: isolate;
+  transition: background .25s, border-color .25s, transform .25s;
+}
+.game-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 28% 32%, rgba(255,145,77,.14), transparent 65%),
+              radial-gradient(circle at 80% 70%, rgba(255,96,0,.12), transparent 70%);
+  opacity: .55;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+.game-item:hover {
+  background: #272c32;
+  border-color: #343a42;
+  transform: translateY(-2px);
+}
+.game-item:active {
+  transform: translateY(0);
+}
+.game-title {
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .5px;
+  color: #ffcbad;
+}
+.game-desc {
+  font-size: .62rem;
+  opacity: .75;
+  line-height: 1.05rem;
+  letter-spacing: .4px;
+}
+
+@media (max-width: 600px) {
+  #balance-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 18px;
+    font-size: 1.1rem;
+  }
+  #investor-splash {
+    position: absolute;
+    top: 64px; /* drop below icons on very small screens */
+    left: 50%;
+    max-width: calc(100% - 32px);
+    transform: translateX(-50%) scale(var(--q-scale));
+    white-space: normal;
+    font-size: 0.86rem;
+    line-height: 1.15rem;
+    padding: 6px 14px 8px 14px;
+  }
+  #footer-content {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+  #logo,
+  #profile-pic {
+    width: 36px;
+    height: 36px;
+    top: 10px;
+  }
+}
