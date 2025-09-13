@@ -106,14 +106,18 @@ cd Moorecoin
 ```
 
 ### 2. Python env
-
-```sh
+(windows)
+```batch
 python -m venv .venv
 .venv\Scripts\activate
 pip install flask firebase-admin flask-cors gunicorn
 ```
-
-(If you add requirements.txt: pip install -r requirements.txt)
+(linux/mac)
+```sh
+python3 -m venv .venv
+. ./.venv/bin/activate
+pip install flask firebase-admin flask-cors gunicorn 
+```
 
 ### 3. Service Account
 
