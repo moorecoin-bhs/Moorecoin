@@ -3,21 +3,33 @@
 (function () {
   const STATE = {
     konamiIdx: 0,
-    typed: '',
+    typed: "",
     logoClicks: [],
     retroEnabled: false,
   };
 
   const KONAMI = [
-    'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'
+    "ArrowUp",
+    "ArrowUp",
+    "ArrowDown",
+    "ArrowDown",
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowLeft",
+    "ArrowRight",
+    "b",
+    "a",
   ];
 
   function prefersReducedMotion() {
-    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return (
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
   }
 
   function injectStyles() {
-    if (document.getElementById('egg-styles')) return;
+    if (document.getElementById("egg-styles")) return;
     const css = `
       @keyframes egg-fall { to { transform: translateY(110vh) rotate(360deg); opacity: .95; } }
       @keyframes egg-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -51,23 +63,23 @@
       .egg-sheet .card h3 { margin: 0 0 8px; font-size: 1rem; }
       .egg-sheet .card p { margin: 0; font-size: .88rem; opacity: .9; }
     `;
-    const style = document.createElement('style');
-    style.id = 'egg-styles';
+    const style = document.createElement("style");
+    style.id = "egg-styles";
     style.textContent = css;
     document.head.appendChild(style);
   }
 
   function showToast(msg, ms = 2400) {
     injectStyles();
-    const el = document.createElement('div');
-    el.className = 'egg-toast';
-    el.role = 'status';
+    const el = document.createElement("div");
+    el.className = "egg-toast";
+    el.role = "status";
     el.innerHTML = msg;
     document.body.appendChild(el);
     // animate in next frame
-    requestAnimationFrame(() => el.classList.add('show'));
+    requestAnimationFrame(() => el.classList.add("show"));
     const t = setTimeout(() => {
-      el.classList.remove('show');
+      el.classList.remove("show");
       setTimeout(() => el.remove(), 220);
       clearTimeout(t);
     }, ms);
@@ -75,29 +87,31 @@
   }
 
   function coinEmoji() {
-    const options = ['🪙', '🟡', '💰', '✨'];
+    const options = ["🪙", "🟡", "💰", "✨"];
     return options[Math.floor(Math.random() * options.length)];
   }
 
   function launchEmojiConfetti({ symbols, durationMs = 2200, count = 80 }) {
     if (prefersReducedMotion()) {
-      showToast('Secret unlocked');
+      showToast("Secret unlocked");
       return;
     }
     injectStyles();
-    const wrap = document.createElement('div');
-    wrap.className = 'egg-confetti';
+    const wrap = document.createElement("div");
+    wrap.className = "egg-confetti";
     for (let i = 0; i < count; i++) {
-      const span = document.createElement('span');
-      span.className = 'piece';
-      const pick = Array.isArray(symbols) ? symbols[Math.floor(Math.random() * symbols.length)] : (symbols?.() ?? '✨');
+      const span = document.createElement("span");
+      span.className = "piece";
+      const pick = Array.isArray(symbols)
+        ? symbols[Math.floor(Math.random() * symbols.length)]
+        : (symbols?.() ?? "✨");
       span.textContent = pick;
       const startLeft = Math.random() * 100; // vw
       const delay = Math.random() * 0.8; // s
       const fall = 2 + Math.random() * 1.5; // s
       const size = 16 + Math.random() * 18; // px
-      span.style.left = startLeft + 'vw';
-      span.style.fontSize = size + 'px';
+      span.style.left = startLeft + "vw";
+      span.style.fontSize = size + "px";
       span.style.animation = `egg-fall ${fall}s ease-in ${delay}s 1 both`;
       wrap.appendChild(span);
     }
@@ -111,14 +125,21 @@
 
   function toggleRetro(on) {
     injectStyles();
-    const enable = on !== undefined ? on : !document.body.classList.contains('egg-retro');
-    document.body.classList.toggle('egg-retro', enable);
-    try { localStorage.setItem('egg-retro', enable ? '1' : '0'); } catch {}
-    showToast(enable ? 'Retro Mode: ON' : 'Retro Mode: OFF');
+    const enable =
+      on !== undefined ? on : !document.body.classList.contains("egg-retro");
+    document.body.classList.toggle("egg-retro", enable);
+    try {
+      localStorage.setItem("egg-retro", enable ? "1" : "0");
+    } catch {}
+    showToast(enable ? "Retro Mode: ON" : "Retro Mode: OFF");
   }
 
   function initRetroFromStorage() {
-    try { STATE.retroEnabled = localStorage.getItem('egg-retro') === '1'; } catch { STATE.retroEnabled = false; }
+    try {
+      STATE.retroEnabled = localStorage.getItem("egg-retro") === "1";
+    } catch {
+      STATE.retroEnabled = false;
+    }
     if (STATE.retroEnabled) toggleRetro(true);
   }
 
@@ -126,14 +147,14 @@
     const ae = document.activeElement;
     if (!ae) return false;
     const tag = ae.tagName?.toLowerCase();
-    return tag === 'input' || tag === 'textarea' || ae.isContentEditable;
+    return tag === "input" || tag === "textarea" || ae.isContentEditable;
   }
 
   function ensureDiscoOverlay() {
-    let el = document.querySelector('.egg-disco-overlay');
+    let el = document.querySelector(".egg-disco-overlay");
     if (!el) {
-      el = document.createElement('div');
-      el.className = 'egg-disco-overlay';
+      el = document.createElement("div");
+      el.className = "egg-disco-overlay";
       document.body.appendChild(el);
     }
     return el;
@@ -141,18 +162,22 @@
 
   function toggleMono(on) {
     injectStyles();
-    const enable = on !== undefined ? on : !document.body.classList.contains('egg-mono');
-    document.body.classList.toggle('egg-mono', enable);
-    showToast(enable ? 'Monochrome: ON' : 'Monochrome: OFF');
+    const enable =
+      on !== undefined ? on : !document.body.classList.contains("egg-mono");
+    document.body.classList.toggle("egg-mono", enable);
+    showToast(enable ? "Monochrome: ON" : "Monochrome: OFF");
   }
 
   function toggleDisco(on) {
     injectStyles();
     const overlay = ensureDiscoOverlay();
-    const enable = on !== undefined ? on : overlay.style.display === 'none' || overlay.dataset.active !== '1';
-    overlay.style.display = enable ? 'block' : 'none';
-    overlay.dataset.active = enable ? '1' : '0';
-    showToast(enable ? 'Disco Mode: ON' : 'Disco Mode: OFF');
+    const enable =
+      on !== undefined
+        ? on
+        : overlay.style.display === "none" || overlay.dataset.active !== "1";
+    overlay.style.display = enable ? "block" : "none";
+    overlay.dataset.active = enable ? "1" : "0";
+    showToast(enable ? "Disco Mode: ON" : "Disco Mode: OFF");
   }
 
   function handleKeydown(e) {
@@ -163,27 +188,27 @@
       if (STATE.konamiIdx === KONAMI.length) {
         STATE.konamiIdx = 0;
         launchCoinConfetti();
-        showToast('Konami! Coin rain achieved. Press Shift+R for Retro Mode.');
+        showToast("Konami! Coin rain achieved. Press Shift+R for Retro Mode.");
       }
     } else {
       // reset if mismatch, but allow repeat start if key was ArrowUp
-      STATE.konamiIdx = (key === 'ArrowUp') ? 1 : 0;
+      STATE.konamiIdx = key === "ArrowUp" ? 1 : 0;
     }
 
     // Retro hotkey
-    if ((e.shiftKey && (key === 'R' || key === 'r')) && !isTypingInForm()) {
+    if (e.shiftKey && (key === "R" || key === "r") && !isTypingInForm()) {
       toggleRetro();
       return;
     }
 
     // Mono hotkey
-    if ((e.shiftKey && (key === 'M' || key === 'm')) && !isTypingInForm()) {
+    if (e.shiftKey && (key === "M" || key === "m") && !isTypingInForm()) {
       toggleMono();
       return;
     }
 
     // Disco hotkey
-    if ((e.shiftKey && (key === 'D' || key === 'd')) && !isTypingInForm()) {
+    if (e.shiftKey && (key === "D" || key === "d") && !isTypingInForm()) {
       toggleDisco();
       return;
     }
@@ -193,117 +218,138 @@
     if (key.length === 1) {
       STATE.typed += key.toLowerCase();
       if (STATE.typed.length > 24) STATE.typed = STATE.typed.slice(-24);
-      if (STATE.typed.includes('moore')) {
+      if (STATE.typed.includes("moore")) {
         const facts = [
-          'Moore lesson: Compound patience > quick wins.',
-          'Moore tip: Own assets, not excuses.',
-          'Moorecoin mantra: Small moves, big outcomes.'
+          "Moore lesson: Compound patience > quick wins.",
+          "Moore tip: Own assets, not excuses.",
+          "Moorecoin mantra: Small moves, big outcomes.",
         ];
         showToast(facts[Math.floor(Math.random() * facts.length)]);
-        STATE.typed = '';
-      } else if (STATE.typed.includes('credits')) {
-        showToast('Built with curiosity. Peek the code on <a href="https://github.com/moorecoin-bhs/Moorecoin" target="_blank" rel="noopener">GitHub</a>.');
-        STATE.typed = '';
-      } else if (STATE.typed.includes('stonks')) {
-        showToast('Stonks? Risk managed is opportunity unlocked.');
-        STATE.typed = '';
-      } else if (STATE.typed.includes('retro')) {
+        STATE.typed = "";
+      } else if (STATE.typed.includes("credits")) {
+        showToast(
+          'Built with curiosity. Peek the code on <a href="https://github.com/moorecoin-bhs/Moorecoin" target="_blank" rel="noopener">GitHub</a>.',
+        );
+        STATE.typed = "";
+      } else if (STATE.typed.includes("stonks")) {
+        showToast("Stonks? Risk managed is opportunity unlocked.");
+        STATE.typed = "";
+      } else if (STATE.typed.includes("retro")) {
         toggleRetro(true);
-        STATE.typed = '';
-      } else if (STATE.typed.includes('mono')) {
+        STATE.typed = "";
+      } else if (STATE.typed.includes("mono")) {
         toggleMono(true);
-        STATE.typed = '';
-      } else if (STATE.typed.includes('party')) {
+        STATE.typed = "";
+      } else if (STATE.typed.includes("party")) {
         toggleDisco(true);
-        STATE.typed = '';
-      } else if (STATE.typed.includes('bunny')) {
-        showToast('(\u00A0\u2022\u0308\u00A0\u00A0\u2022\u0308\u00A0)\u30CE  \u2514(\u00A0\u30FB\u25E1\u30FB)\u2518  \u273F');
-        STATE.typed = '';
-      } else if (STATE.typed.includes('idkfa')) {
-        showToast('God Mode? Not here—only Discipline Mode.');
-        STATE.typed = '';
-      } else if (STATE.typed.includes('snow')) {
-        launchEmojiConfetti({ symbols: ['❄️','✨','❅','❆'], count: 90, durationMs: 2600 });
-        STATE.typed = '';
+        STATE.typed = "";
+      } else if (STATE.typed.includes("bunny")) {
+        showToast(
+          "(\u00A0\u2022\u0308\u00A0\u00A0\u2022\u0308\u00A0)\u30CE  \u2514(\u00A0\u30FB\u25E1\u30FB)\u2518  \u273F",
+        );
+        STATE.typed = "";
+      } else if (STATE.typed.includes("idkfa")) {
+        showToast("God Mode? Not here—only Discipline Mode.");
+        STATE.typed = "";
+      } else if (STATE.typed.includes("snow")) {
+        launchEmojiConfetti({
+          symbols: ["❄️", "✨", "❅", "❆"],
+          count: 90,
+          durationMs: 2600,
+        });
+        STATE.typed = "";
       }
     }
   }
 
   function initLogoClicks() {
     // Try common logo selectors
-    const logo = document.getElementById('logo') || document.querySelector('img[src*="favicon"]');
+    const logo =
+      document.getElementById("logo") ||
+      document.querySelector('img[src*="favicon"]');
     if (!logo) return;
-    logo.addEventListener('click', () => {
+    logo.addEventListener("click", () => {
       const now = Date.now();
-      STATE.logoClicks = STATE.logoClicks.filter(t => now - t < 1500);
+      STATE.logoClicks = STATE.logoClicks.filter((t) => now - t < 1500);
       STATE.logoClicks.push(now);
       if (STATE.logoClicks.length >= 5) {
         STATE.logoClicks.length = 0;
-        logo.classList.remove('egg-logo-spin');
+        logo.classList.remove("egg-logo-spin");
         // restart animation by forcing reflow
-        void logo.offsetWidth; 
-        logo.classList.add('egg-logo-spin');
-        showToast('You found the spinner! ✨');
+        void logo.offsetWidth;
+        logo.classList.add("egg-logo-spin");
+        showToast("You found the spinner! ✨");
       }
     });
   }
 
   function init404Secret() {
     if (!/404\.html(?=$|\?|#)/.test(location.pathname)) return;
-    const h1 = document.querySelector('h1');
+    const h1 = document.querySelector("h1");
     if (!h1) return;
     let taps = [];
-    h1.style.cursor = 'pointer';
-    h1.title = '…';
-    h1.addEventListener('click', () => {
+    h1.style.cursor = "pointer";
+    h1.title = "…";
+    h1.addEventListener("click", () => {
       const now = Date.now();
-      taps = taps.filter(t => now - t < 1200);
+      taps = taps.filter((t) => now - t < 1200);
       taps.push(now);
       if (taps.length >= 3) {
         taps.length = 0;
         launchCoinConfetti(2000, 60);
-        showToast('Secret portal opening…');
-        setTimeout(() => { window.location.href = './index.html'; }, 1400);
+        showToast("Secret portal opening…");
+        setTimeout(() => {
+          window.location.href = "./index.html";
+        }, 1400);
       }
     });
   }
 
   function initLongPressHints() {
     // Long press the exchange rate area to see a nerd tip
-    const rateWrap = document.getElementById('moorecoin-value');
+    const rateWrap = document.getElementById("moorecoin-value");
     if (!rateWrap) return;
     let timer = null;
     function start() {
       clear();
       timer = setTimeout(() => {
-        showToast('Hint: As total supply grows, exchange rate decays (exp curve).');
+        showToast(
+          "Hint: As total supply grows, exchange rate decays (exp curve).",
+        );
       }, 1200);
     }
-    function clear() { if (timer) { clearTimeout(timer); timer = null; } }
-    rateWrap.addEventListener('mouseenter', start);
-    rateWrap.addEventListener('mouseleave', clear);
-    rateWrap.addEventListener('touchstart', start, { passive: true });
-    rateWrap.addEventListener('touchend', clear);
-    rateWrap.addEventListener('touchcancel', clear);
+    function clear() {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    }
+    rateWrap.addEventListener("mouseenter", start);
+    rateWrap.addEventListener("mouseleave", clear);
+    rateWrap.addEventListener("touchstart", start, { passive: true });
+    rateWrap.addEventListener("touchend", clear);
+    rateWrap.addEventListener("touchcancel", clear);
   }
 
   function initBalancePulse() {
-    const mc = document.getElementById('moorecoins');
+    const mc = document.getElementById("moorecoins");
     if (!mc) return;
     let clicks = [];
-    mc.style.cursor = 'pointer';
-    mc.title = ' '; // subtle hint
-    mc.addEventListener('click', () => {
+    mc.style.cursor = "pointer";
+    mc.title = " "; // subtle hint
+    mc.addEventListener("click", () => {
       const now = Date.now();
-      clicks = clicks.filter(t => now - t < 1000);
+      clicks = clicks.filter((t) => now - t < 1000);
       clicks.push(now);
       if (clicks.length >= 3) {
         clicks.length = 0;
-        mc.classList.remove('egg-pulse'); void mc.offsetWidth; mc.classList.add('egg-pulse');
+        mc.classList.remove("egg-pulse");
+        void mc.offsetWidth;
+        mc.classList.add("egg-pulse");
         const tips = [
-          'Tip: Exchange coins for EC, or try a bond for a set ROI.',
-          'Pro tip: Keep reserves before you roll the dice.',
-          'Hint: Bonds auto-credit at maturity—no manual claim needed.'
+          "Tip: Exchange coins for EC, or try a bond for a set ROI.",
+          "Pro tip: Keep reserves before you roll the dice.",
+          "Hint: Bonds auto-credit at maturity—no manual claim needed.",
         ];
         showToast(tips[Math.floor(Math.random() * tips.length)]);
       }
@@ -311,26 +357,40 @@
   }
 
   function initFooterCredits() {
-    const foot = document.getElementById('footer-content');
+    const foot = document.getElementById("footer-content");
     if (!foot) return;
     let last = 0;
-    foot.addEventListener('dblclick', () => {
+    foot.addEventListener("dblclick", () => {
       // Prevent spam
-      const now = Date.now(); if (now - last < 600) return; last = now;
+      const now = Date.now();
+      if (now - last < 600) return;
+      last = now;
       injectStyles();
-      const sheet = document.createElement('div');
-      sheet.className = 'egg-sheet';
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = '<h3>Moorecoin Credits</h3><p>Made with curiosity by the Moorecoin team. Stay disciplined, compound often.</p>';
+      const sheet = document.createElement("div");
+      sheet.className = "egg-sheet";
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML =
+        "<h3>Moorecoin Credits</h3><p>Made with curiosity by the Moorecoin team. Stay disciplined, compound often.</p>";
       sheet.appendChild(card);
       document.body.appendChild(sheet);
-      function close() { sheet.remove(); document.removeEventListener('keydown', onKey, true); }
-      function onKey(e){ if (e.key === 'Escape') close(); }
-      sheet.addEventListener('click', close);
-      document.addEventListener('keydown', onKey, true);
-      setTimeout(() => { card.focus?.(); }, 10);
-      setTimeout(() => { try { sheet.remove(); } catch {} }, 8000); // auto-dismiss
+      function close() {
+        sheet.remove();
+        document.removeEventListener("keydown", onKey, true);
+      }
+      function onKey(e) {
+        if (e.key === "Escape") close();
+      }
+      sheet.addEventListener("click", close);
+      document.addEventListener("keydown", onKey, true);
+      setTimeout(() => {
+        card.focus?.();
+      }, 10);
+      setTimeout(() => {
+        try {
+          sheet.remove();
+        } catch {}
+      }, 8000); // auto-dismiss
     });
   }
 
@@ -342,11 +402,11 @@
     initLongPressHints();
     initBalancePulse();
     initFooterCredits();
-    window.addEventListener('keydown', handleKeydown, { passive: true });
+    window.addEventListener("keydown", handleKeydown, { passive: true });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
   }

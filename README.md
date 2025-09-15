@@ -17,6 +17,7 @@ A classroom / community reward system. Users earn “Moorecoins”, view leaderb
 ## High‑Level Data Model
 
 Firestore collections / docs (simplified):
+
 - users/{uid}
   - profile: { displayName, email, photoURL, createdAt, hour }
   - balances: { coins, totalEarned }
@@ -36,25 +37,29 @@ Legacy fallback fields (coins, totalEarned, admin, hour) still respected.
 File: app.py (Flask + firebase_admin + flask_cors)
 
 Key helpers:
+
 - verify_token(): extracts & verifies Firebase ID token (Authorization: Bearer <token>)
-- compute_bond_interest_rate(totalSupply): 0.1 + 0.65 * e^(−0.000486 * supply)
-- _maybe_redeem_matured_bond(): transactional bond payout
+- compute_bond_interest_rate(totalSupply): 0.1 + 0.65 _ e^(−0.000486 _ supply)
+- \_maybe_redeem_matured_bond(): transactional bond payout
 
 ## API Overview
 
 Public:
-- GET /             Basic message
-- GET /health       Uptime + dependency latency
+
+- GET / Basic message
+- GET /health Uptime + dependency latency
 
 Authenticated (Bearer ID token):
-- GET /user/exists          Creates default user if missing
-- GET /user/info            Returns user doc (may auto‑redeem matured bond)
-- PATCH /user/hour          Set hour once (1–6)
-- GET /user/bond            Current (or last) bond
-- POST /purchase/bond       { amount:int, term?:int }
-- POST /purchase/exchange/{n}  Spend n coins → queued in stats/pending
+
+- GET /user/exists Creates default user if missing
+- GET /user/info Returns user doc (may auto‑redeem matured bond)
+- PATCH /user/hour Set hour once (1–6)
+- GET /user/bond Current (or last) bond
+- POST /purchase/bond { amount:int, term?:int }
+- POST /purchase/exchange/{n} Spend n coins → queued in stats/pending
 
 Stats / Leaderboard:
+
 - GET /stats/moorecoins/total
 - POST /stats/moorecoins/edit (admin)
 - GET /stats/users/total
@@ -62,13 +67,15 @@ Stats / Leaderboard:
 - GET /stats/users/leaderboard/{limit}
 
 Admin:
+
 - GET /admin/users?limit=&order=&dir=
-- PATCH /admin/users/{uid}  (coins, admin, hour)
-- POST /admin/hour/award    { hour, coins }
+- PATCH /admin/users/{uid} (coins, admin, hour)
+- POST /admin/hour/award { hour, coins }
 - GET /admin/pending
 - DELETE /admin/pending/{uid}
 
 Bond lifecycle:
+
 1. POST /purchase/bond (locks principal, increments bondsOutstanding)
 2. After payoutAt, any read of /user/info or /user/bond triggers lazy redemption
 3. Redemption mints ONLY interest portion to global supply, releases locked principal to user balance
@@ -81,11 +88,13 @@ HTTP 401 (auth), 403 (not admin), 400 (validation), 404 (missing), 503 (/health 
 ## Getting Started (Local)
 
 Prerequisites:
+
 - Python 3.11+
 - Firebase project (Firestore in Native mode enabled)
 - Service Account key (JSON) with Firestore + Auth admin rights
 
 Project layout (partial):
+
 ```
 app.py
 public/
@@ -106,25 +115,31 @@ cd Moorecoin
 ```
 
 ### 2. Python env
+
 (windows)
+
 ```batch
 python -m venv .venv
 .venv\Scripts\activate
 pip install flask firebase-admin flask-cors gunicorn
 ```
+
 (linux/mac)
+
 ```sh
 python3 -m venv .venv
 . ./.venv/bin/activate
-pip install flask firebase-admin flask-cors gunicorn 
+pip install flask firebase-admin flask-cors gunicorn
 ```
 
 ### 3. Service Account
 
 Place JSON at:
+
 ```
 secrets/moorecoin-service-key.json
 ```
+
 Keep this file out of version control (add secrets/ to .gitignore).
 
 ### 4. Run Dev Server
@@ -155,6 +170,7 @@ firebase deploy --only hosting,firestore:rules,firestore:indexes
 ## Auth (Testing)
 
 Obtain a Firebase ID token (client SDK signIn) then call:
+
 ```
 Authorization: Bearer <ID_TOKEN>
 ```
@@ -162,28 +178,33 @@ Authorization: Bearer <ID_TOKEN>
 ## Example Requests
 
 Health:
+
 ```sh
 curl https://your-host/health
 ```
 
 User bootstrap:
+
 ```sh
 curl -H "Authorization: Bearer $TOKEN" https://your-host/user/exists
 ```
 
 Purchase bond:
+
 ```sh
 curl -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"amount":100,"term":14}' https://your-host/purchase/bond
 ```
 
 Award hour (admin):
+
 ```sh
 curl -X POST -H "Authorization: Bearer $ADMIN" -H "Content-Type: application/json" \
   -d '{"hour":3,"coins":5}' https://your-host/admin/hour/award
 ```
 
 Exchange:
+
 ```sh
 curl -X POST -H "Authorization: Bearer $TOKEN" https://your-host/purchase/exchange/25
 ```
@@ -206,6 +227,7 @@ curl -X POST -H "Authorization: Bearer $TOKEN" https://your-host/purchase/exchan
 ## Extending
 
 Ideas:
+
 - Add pagination for /admin/users
 - Add audit log collection
 - Allow multiple concurrent bonds with an array
@@ -219,6 +241,7 @@ Check: Token expired, wrong Firebase project, missing Authorization header.
 
 Issue: Bond purchase fails with "Global stats missing"  
 Create stats/global doc with fields:
+
 ```
 { "moorecoins": 0, "users": 0, "bondsOutstanding": 0 }
 ```
