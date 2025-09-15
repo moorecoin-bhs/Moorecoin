@@ -228,7 +228,7 @@ Ensure users set hour via PATCH /user/hour first.
 
 ## License
 
-See LICENSE.
+See [LICENSE](LICENSE).
 
 ## Disclaimer
 
