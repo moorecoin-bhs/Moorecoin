@@ -39,7 +39,7 @@ File: app.py (Flask + firebase_admin + flask_cors)
 Key helpers:
 
 - verify_token(): extracts & verifies Firebase ID token (Authorization: Bearer <token>)
-- compute_bond_interest_rate(totalSupply): 0.1 + 0.65 _ e^(−0.000486 _ supply)
+- compute*bond_interest_rate(totalSupply): 0.1 + 0.65 * e^(−0.000486 \_ supply)
 - \_maybe_redeem_matured_bond(): transactional bond payout
 
 ## API Overview
