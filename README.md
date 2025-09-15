@@ -2,6 +2,8 @@
 
 A classroom / community reward system. Users earn “Moorecoins”, view leaderboards, lock coins in time‑based bonds for yield, and redeem (exchange) coins. Admins can award coins, manage users, clear pending redemptions, and monitor system health.
 
+Licensed under the [GNU AGPL v3](LICENSE).
+
 ## Features
 
 - Firebase Authentication (validated server‑side with Admin SDK)
@@ -250,6 +252,21 @@ Issue: Hour award finds zero users
 Ensure users set hour via PATCH /user/hour first.
 
 ## License
+
+Copyright (C) 2025 Noah Harper
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 See [LICENSE](LICENSE).
 
