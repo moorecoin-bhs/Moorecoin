@@ -233,3 +233,15 @@ See [LICENSE](LICENSE).
 ## Disclaimer
 
 Educational / demonstration use; not financial currency.
+
+## Easter Eggs (Maintainers)
+
+Lightweight, purely cosmetic easter eggs are included via `public/easter-eggs.js` and loaded on user‑facing pages:
+
+- Konami code (↑ ↑ ↓ ↓ ← → ← → B A) triggers a brief coin confetti rain.
+- Shift+R toggles a retro theme; persisted in localStorage (`egg-retro`).
+- Clicking the logo 5 times within ~1.5s spins it and shows a toast.
+- Typing hidden words (moore, credits, stonks, retro) shows fun toasts or toggles retro.
+- On `404.html`, clicking the headline 3 times launches confetti, then returns to the home page.
+
+These are intentionally mild and do not change balances or grant coins.
