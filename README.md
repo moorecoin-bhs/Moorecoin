@@ -1,22 +1,46 @@
 # Moorecoin
 
-A classroom / community reward system. Users earn “Moorecoins”, view leaderboards, lock coins in time‑based bonds for yield, and redeem (exchange) coins. Admins can award coins, manage users, clear pending redemptions, and monitor system health.
+A classroom / community reward system. Users earn “Moorecoins”, view leaderboards, lock coins in time-based bonds for yield, and redeem (exchange) coins. Admins can award coins, manage users, clear pending redemptions, and monitor system health.
 
 Licensed under the [GNU AGPL v3](LICENSE).
 
+## Table of Contents
+
+- [Features](#features)
+- [High-Level Data Model](#high-level-data-model)
+- [Backend (Flask)](#backend-flask)
+- [API Overview](#api-overview)
+- [Error Conventions](#error-conventions)
+- [Getting Started (Local)](#getting-started-local)
+  - [1. Clone](#1-clone)
+  - [2. Python env](#2-python-env)
+  - [3. Service Account](#3-service-account)
+  - [4. Run Dev Server](#4-run-dev-server)
+  - [5. Gunicorn (production style)](#5-gunicorn-production-style)
+  - [6. Frontend (if using Firebase Hosting)](#6-frontend-if-using-firebase-hosting)
+- [Auth (Testing)](#auth-testing)
+- [Example Requests](#example-requests)
+- [Security Notes](#security-notes)
+- [Operational Notes](#operational-notes)
+- [Extending](#extending)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+- [Disclaimer](#disclaimer)
+- [Easter Eggs (Maintainers)](#easter-eggs-maintainers)
+
 ## Features
 
-- Firebase Authentication (validated server‑side with Admin SDK)
+- Firebase Authentication (validated server-side with Admin SDK)
 - Firestore data (user profiles, balances, stats, bonds, pending redemptions)
 - Bond mechanism (lock principal, earn interest based on total supply)
-- Hour grouping (assign class hour once; admins bulk‑award per hour)
+- Hour grouping (assign class hour once; admins bulk-award per hour)
 - Secure admin endpoints (role flag on user doc)
 - Leaderboard + global stats
 - Lazy bond redemption (auto processes on read after maturity)
 - Pending redemption queue (manual fulfillment workflow)
 - Lightweight health/status endpoint
 
-## High‑Level Data Model
+## High-Level Data Model
 
 Firestore collections / docs (simplified):
 
@@ -40,8 +64,8 @@ File: app.py (Flask + firebase_admin + flask_cors)
 
 Key helpers:
 
-- verify_token(): extracts & verifies Firebase ID token (Authorization: Bearer <token>)
-- compute*bond_interest_rate(totalSupply): 0.1 + 0.65 * e^(−0.000486 \_ supply)
+- verify_token(): extracts & verifies Firebase ID token (Authorization: Bearer \<token\>)
+- compute\*bond_interest_rate(totalSupply): 0.1 + 0.65 \* e^(−0.000486 \_ supply)
 - \_maybe_redeem_matured_bond(): transactional bond payout
 
 ## API Overview
@@ -54,7 +78,7 @@ Public:
 Authenticated (Bearer ID token):
 
 - GET /user/exists Creates default user if missing
-- GET /user/info Returns user doc (may auto‑redeem matured bond)
+- GET /user/info Returns user doc (may auto-redeem matured bond)
 - PATCH /user/hour Set hour once (1–6)
 - GET /user/bond Current (or last) bond
 - POST /purchase/bond { amount:int, term?:int }
@@ -84,7 +108,7 @@ Bond lifecycle:
 
 ## Error Conventions
 
-JSON: { "error": "<message>" }  
+JSON: { "error": "\<message\>" }  
 HTTP 401 (auth), 403 (not admin), 400 (validation), 404 (missing), 503 (/health dependency failure).
 
 ## Getting Started (Local)
@@ -148,7 +172,7 @@ Keep this file out of version control (add secrets/ to .gitignore).
 
 ```sh
 python app.py
-# or with auto‑reload
+# or with auto-reload
 set FLASK_APP=app.py
 flask run
 ```
@@ -213,7 +237,7 @@ curl -X POST -H "Authorization: Bearer $TOKEN" https://your-host/purchase/exchan
 
 ## Security Notes
 
-- All mutating endpoints verify Firebase ID token server‑side.
+- All mutating endpoints verify Firebase ID token server-side.
 - Admin role is stored on user doc (flags.admin). Change via PATCH /admin/users/{uid}.
 - Do not expose service account JSON publicly.
 - Consider rate limiting (not included).
@@ -224,7 +248,7 @@ curl -X POST -H "Authorization: Bearer $TOKEN" https://your-host/purchase/exchan
 - /health touches Auth (list_users) and stats/global (Firestore read).
 - Response header X-Response-Time added for latency insights.
 - Lazy bond redemption keeps cron jobs unnecessary.
-- Pending redemptions require an out‑of‑band fulfillment process (e.g., mark delivered then DELETE entry).
+- Pending redemptions require an out-of-band fulfillment process (e.g., mark delivered then DELETE entry).
 
 ## Extending
 
@@ -276,7 +300,7 @@ Educational / demonstration use; not financial currency.
 
 ## Easter Eggs (Maintainers)
 
-Lightweight, purely cosmetic easter eggs are included via `public/easter-eggs.js` and loaded on user‑facing pages. They’re intentionally mild and do not change balances or grant coins.
+Lightweight, purely cosmetic easter eggs are included via `public/easter-eggs.js` and loaded on user-facing pages. They’re intentionally mild and do not change balances or grant coins.
 
 Discoverables:
 
@@ -287,10 +311,10 @@ Discoverables:
   - Shift+D → Disco overlay (reduced-motion friendly)
 - Click sequences:
   - Click the logo 5× within ~1.5s → playful spin + toast
-  - Triple‑click the Moorecoins balance number → pulse + randomized tip
+  - Triple-click the Moorecoins balance number → pulse + randomized tip
   - On `404.html`, click the headline 3× → confetti + redirect home
-  - Double‑click the footer links area → small overlay credits card (auto-dismiss)
-- Long‑press hint: hover/touch‑hold the “Moorecoin value” area (~1.2s) → decay curve tip
+  - Double-click the footer links area → small overlay credits card (auto-dismiss)
+- Long-press hint: hover/touch-hold the “Moorecoin value” area (~1.2s) → decay curve tip
 - Phrase triggers (type anywhere outside inputs):
   - moore, credits, stonks, retro (existing)
   - mono → enables monochrome
