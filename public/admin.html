@@ -141,6 +141,50 @@
         font-size: 0.72rem;
         line-height: 1.1;
       }
+
+      /* Banner styles (subset) for preview */
+      .site-banner {
+        position: relative;
+        width: 100%;
+        box-sizing: border-box;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .site-banner-inner {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 16px;
+        border-bottom: 1px solid transparent;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+      .banner-info {
+        background: #22324a;
+        color: #d8e6ff;
+        border-color: #2a3b56;
+      }
+      .banner-success {
+        background: #153b2b;
+        color: #bff3df;
+        border-color: #194734;
+      }
+      .banner-warning {
+        background: #3b2f15;
+        color: #ffe3b8;
+        border-color: #4a3a19;
+      }
+      .banner-danger {
+        background: #3b1b1b;
+        color: #ffd5d5;
+        border-color: #4a2222;
+      }
+      .banner-promo {
+        background: #241d3b;
+        color: #e5d9ff;
+        border-color: #2b2247;
+      }
     </style>
   </head>
 
@@ -409,6 +453,14 @@
         getAuth,
         onAuthStateChanged,
       } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        onSnapshot,
+        getDoc,
+        setDoc,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
       const auth = getAuth(app);
       let currentIdToken = null;
 
@@ -477,6 +529,89 @@
               close();
             footer.append(b);
           });
+          <div class="card" style="max-width:680px; margin-bottom:16px;">
+            <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;">
+              Site Banner <span class="chip">beta</span>
+            </h3>
+            <div class="form-row">
+              <label for="banner-msg">Message</label>
+              <textarea
+                id="banner-msg"
+                rows="3"
+                style="width:100%; background:#23262b; border:1px solid #30343a; padding:10px 12px; border-radius:10px; color:#f2f6fa; resize:vertical;"
+                placeholder="e.g. Find a bug, earn 50 Moorecoins"
+              ></textarea>
+            </div>
+            <div class="form-row">
+              <label for="banner-link">Link (optional)</label>
+              <input
+                id="banner-link"
+                type="url"
+                placeholder="https://example.com/details"
+                style="width:100%; background:#23262b; border:1px solid #30343a; padding:10px 12px; border-radius:10px; color:#f2f6fa;"
+              />
+            </div>
+            <div class="two-col" style="margin: 10px 0 6px;">
+              <div class="form-row">
+                <label for="banner-variant">Variant</label>
+                <select
+                  id="banner-variant"
+                  style="width:100%; background:#23262b; border:1px solid #30343a; padding:10px 12px; border-radius:10px; color:#f2f6fa;"
+                >
+                  <option value="promo">Promo (purple)</option>
+                  <option value="info">Info (blue)</option>
+                  <option value="success">Success (green)</option>
+                  <option value="warning">Warning (amber)</option>
+                  <option value="danger">Danger (red)</option>
+                </select>
+              </div>
+              <div
+                class="form-row"
+                style="display:flex; align-items:center; gap:14px;"
+              >
+                <label style="display:flex; align-items:center; gap:8px;">
+                  <input id="banner-active" type="checkbox" checked /> Active
+                </label>
+                <label style="display:flex; align-items:center; gap:8px;">
+                  <input id="banner-dismissible" type="checkbox" checked />{" "}
+                  Dismissible
+                </label>
+              </div>
+            </div>
+            <div class="inline-info">
+              Saving will bump the version so students see the updated banner
+              even if previously dismissed.
+            </div>
+            <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+              <button class="btn-secondary" id="banner-preview">
+                Preview
+              </button>
+              <button class="btn-primary" id="banner-save">
+                Save Banner
+              </button>
+              <button
+                class="btn-secondary"
+                id="banner-deactivate"
+                title="Turn off banner"
+                style="background:#3a1f1f; border-color:#5a2b2b;"
+              >
+                Deactivate
+              </button>
+              <button
+                class="btn-secondary"
+                id="banner-reset"
+                title="Only affects your browser"
+              >
+                Reset My Dismiss
+              </button>
+            </div>
+            <div
+              id="banner-status"
+              class="inline-info"
+              style="min-height:16px; margin-top:8px;"
+            ></div>
+            <div id="banner-preview-area" style="margin-top:10px;"></div>
+          </div>;
         }
         dialog.append(header, bodyWrap, footer);
         overlay.append(dialog);
@@ -1022,6 +1157,12 @@
             info.profile?.displayName || user.displayName || "Admin";
           document.getElementById("profile-menu-email").textContent =
             info.profile?.email || user.email || "";
+          // Initialize Site Banner editor
+          try {
+            setupBannerAdmin(user);
+          } catch (e) {
+            console.warn(e);
+          }
         } catch (e) {
           console.error("Admin check failed", e);
           window.location.href = "./dashboard.html";
@@ -1071,7 +1212,138 @@
       document.getElementById("go-dashboard").addEventListener("click", () => {
         window.location.href = "./dashboard.html";
       });
+
+      // -----------------------
+      // Site Banner Admin Logic
+      // -----------------------
+      function setupBannerAdmin(currentUser) {
+        const db = getFirestore(app);
+        const ref = doc(db, "config", "banner");
+        const els = {
+          msg: document.getElementById("banner-msg"),
+          link: document.getElementById("banner-link"),
+          variant: document.getElementById("banner-variant"),
+          active: document.getElementById("banner-active"),
+          dismissible: document.getElementById("banner-dismissible"),
+          save: document.getElementById("banner-save"),
+          preview: document.getElementById("banner-preview"),
+          deactivate: document.getElementById("banner-deactivate"),
+          reset: document.getElementById("banner-reset"),
+          status: document.getElementById("banner-status"),
+          area: document.getElementById("banner-preview-area"),
+        };
+        if (!els.msg) return; // panel not present
+        let current = null;
+        let isSaving = false;
+        onSnapshot(ref, (snap) => {
+          current = snap.exists() ? snap.data() : null;
+          if (isSaving) return; // don't clobber user input while saving
+          if (current) fillForm(current);
+        });
+        function fillForm(data) {
+          els.msg.value = data.message || "";
+          els.link.value = data.linkUrl || "";
+          els.variant.value = (data.variant || "promo").toLowerCase();
+          els.active.checked = data.active !== false;
+          els.dismissible.checked = data.dismissible !== false;
+        }
+        function collect() {
+          return {
+            message: els.msg.value.trim(),
+            linkUrl: els.link.value.trim() || "",
+            variant: els.variant.value,
+            active: !!els.active.checked,
+            dismissible: !!els.dismissible.checked,
+          };
+        }
+        function renderPreview() {
+          const data = collect();
+          const box = document.createElement("div");
+          box.className = `site-banner banner-${(data.variant || "promo").toLowerCase()}`;
+          const inner = document.createElement("div");
+          inner.className = "site-banner-inner";
+          const span = document.createElement("span");
+          span.textContent = data.message || "(empty)";
+          if (data.linkUrl) {
+            const a = document.createElement("a");
+            a.href = data.linkUrl;
+            a.target = "_blank";
+            a.rel = "noopener";
+            a.textContent = "Learn more";
+            span.append(" ");
+            span.append(a);
+          }
+          inner.append(span);
+          box.append(inner);
+          els.area.innerHTML = "";
+          els.area.append(box);
+        }
+        async function save() {
+          const data = collect();
+          if (!data.message) {
+            els.status.textContent = "Message is required";
+            return;
+          }
+          try {
+            isSaving = true;
+            els.status.textContent = "Saving…";
+            const version = (current?.version ?? 0) + 1;
+            const payload = {
+              ...data,
+              version: data.active ? version : (current?.version ?? 1),
+              updatedAt: serverTimestamp(),
+              updatedBy: {
+                uid: currentUser?.uid || null,
+                name: currentUser?.displayName || null,
+                email: currentUser?.email || null,
+              },
+            };
+            await setDoc(ref, payload, { merge: true });
+            els.status.textContent = "Saved";
+          } catch (e) {
+            console.error(e);
+            els.status.textContent = "Save failed: " + e.message;
+          } finally {
+            isSaving = false;
+          }
+        }
+        async function deactivate() {
+          try {
+            isSaving = true;
+            els.status.textContent = "Deactivating…";
+            await setDoc(
+              ref,
+              { active: false, updatedAt: serverTimestamp() },
+              { merge: true },
+            );
+            els.status.textContent = "Deactivated";
+          } catch (e) {
+            els.status.textContent = "Error: " + e.message;
+          } finally {
+            isSaving = false;
+          }
+        }
+        function resetDismiss() {
+          try {
+            const prefix = "moorecoin_banner_dismiss_v";
+            const keys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (k && k.startsWith(prefix)) keys.push(k);
+            }
+            keys.forEach((k) => localStorage.removeItem(k));
+            els.status.textContent = "Local dismiss reset";
+          } catch {}
+        }
+        els.preview.addEventListener("click", renderPreview);
+        els.save.addEventListener("click", save);
+        els.deactivate.addEventListener("click", deactivate);
+        els.reset.addEventListener("click", resetDismiss);
+        // Initial populate
+        getDoc(ref).then((snap) => snap.exists() && fillForm(snap.data()));
+      }
     </script>
+    <script type="module" src="./banner.js"></script>
     <script src="./easter-eggs.js"></script>
   </body>
 </html>
