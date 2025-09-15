@@ -303,20 +303,59 @@
           Feature scaffold - future administrative toggles & bond parameters
           will appear here.
         </p>
-        <div class="card" style="max-width:680px; margin-bottom:16px;">
-          <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;">Site Banner <span class="chip">beta</span></h3>
+        <div class="card" style="max-width: 680px; margin-bottom: 16px">
+          <h3
+            style="margin-top: 0; display: flex; align-items: center; gap: 8px"
+          >
+            Site Banner <span class="chip">beta</span>
+          </h3>
           <div class="form-row">
             <label for="banner-msg">Message</label>
-            <textarea id="banner-msg" rows="3" style="width:100%; background:#23262b; border:1px solid #30343a; padding:10px 12px; border-radius:10px; color:#f2f6fa; resize:vertical;" placeholder="e.g. Find a bug, earn 50 Moorecoins"></textarea>
+            <textarea
+              id="banner-msg"
+              rows="3"
+              style="
+                width: 100%;
+                background: #23262b;
+                border: 1px solid #30343a;
+                padding: 10px 12px;
+                border-radius: 10px;
+                color: #f2f6fa;
+                resize: vertical;
+              "
+              placeholder="e.g. Find a bug, earn 50 Moorecoins"
+            ></textarea>
           </div>
           <div class="form-row">
             <label for="banner-link">Link (optional)</label>
-            <input id="banner-link" type="url" placeholder="https://example.com/details" style="width:100%; background:#23262b; border:1px solid #30343a; padding:10px 12px; border-radius:10px; color:#f2f6fa;" />
+            <input
+              id="banner-link"
+              type="url"
+              placeholder="https://example.com/details"
+              style="
+                width: 100%;
+                background: #23262b;
+                border: 1px solid #30343a;
+                padding: 10px 12px;
+                border-radius: 10px;
+                color: #f2f6fa;
+              "
+            />
           </div>
-          <div class="two-col" style="margin: 10px 0 6px;">
+          <div class="two-col" style="margin: 10px 0 6px">
             <div class="form-row">
               <label for="banner-variant">Variant</label>
-              <select id="banner-variant" style="width:100%; background:#23262b; border:1px solid #30343a; padding:10px 12px; border-radius:10px; color:#f2f6fa;">
+              <select
+                id="banner-variant"
+                style="
+                  width: 100%;
+                  background: #23262b;
+                  border: 1px solid #30343a;
+                  padding: 10px 12px;
+                  border-radius: 10px;
+                  color: #f2f6fa;
+                "
+              >
                 <option value="promo">Promo (purple)</option>
                 <option value="info">Info (blue)</option>
                 <option value="success">Success (green)</option>
@@ -324,24 +363,50 @@
                 <option value="danger">Danger (red)</option>
               </select>
             </div>
-            <div class="form-row" style="display:flex; align-items:center; gap:14px;">
-              <label style="display:flex; align-items:center; gap:8px;">
+            <div
+              class="form-row"
+              style="display: flex; align-items: center; gap: 14px"
+            >
+              <label style="display: flex; align-items: center; gap: 8px">
                 <input id="banner-active" type="checkbox" checked /> Active
               </label>
-              <label style="display:flex; align-items:center; gap:8px;">
-                <input id="banner-dismissible" type="checkbox" checked /> Dismissible
+              <label style="display: flex; align-items: center; gap: 8px">
+                <input id="banner-dismissible" type="checkbox" checked />
+                Dismissible
               </label>
             </div>
           </div>
-          <div class="inline-info">Saving will bump the version so students see the updated banner even if previously dismissed.</div>
-          <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+          <div class="inline-info">
+            Saving will bump the version so students see the updated banner even
+            if previously dismissed.
+          </div>
+          <div
+            style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap"
+          >
             <button class="btn-secondary" id="banner-preview">Preview</button>
             <button class="btn-primary" id="banner-save">Save Banner</button>
-            <button class="btn-secondary" id="banner-deactivate" title="Turn off banner" style="background:#3a1f1f; border-color:#5a2b2b;">Deactivate</button>
-            <button class="btn-secondary" id="banner-reset" title="Only affects your browser">Reset My Dismiss</button>
+            <button
+              class="btn-secondary"
+              id="banner-deactivate"
+              title="Turn off banner"
+              style="background: #3a1f1f; border-color: #5a2b2b"
+            >
+              Deactivate
+            </button>
+            <button
+              class="btn-secondary"
+              id="banner-reset"
+              title="Only affects your browser"
+            >
+              Reset My Dismiss
+            </button>
           </div>
-          <div id="banner-status" class="inline-info" style="min-height:16px; margin-top:8px;"></div>
-          <div id="banner-preview-area" style="margin-top:10px;"></div>
+          <div
+            id="banner-status"
+            class="inline-info"
+            style="min-height: 16px; margin-top: 8px"
+          ></div>
+          <div id="banner-preview-area" style="margin-top: 10px"></div>
         </div>
         <div class="card" style="max-width: 480px">
           <h3 style="margin-top: 0">Planned Controls</h3>
