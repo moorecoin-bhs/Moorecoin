@@ -1,0 +1,22 @@
+name: Prettier Auto-Fix
+on:
+  pull_request:
+  push:
+jobs:
+  prettier-fix:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npx prettier@latest --write .
+      - name: Commit formatted files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: format with Prettier"
+          branch: ${{ github.head_ref || github.ref_name }}
