@@ -13,12 +13,12 @@
 	<meta property="og:title" content="Moorecoin" />
 	<meta property="og:description" content="Earn and exchange Moorecoins for extra credit." />
 	<meta property="og:type" content="website" />
-	<meta property="og:url" content="https://example.com/" />
-	<meta property="og:image" content="https://example.com/img/favicon.png" />
+	<meta property="og:url" content="https://mooreco.in/" />
+	<meta property="og:image" content="https://mooreco.in/img/favicon.png" />
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:title" content="Moorecoin" />
 	<meta name="twitter:description" content="Earn and exchange Moorecoins for extra credit." />
-	<meta name="twitter:image" content="https://example.com/img/favicon.png" />
+	<meta name="twitter:image" content="https://mooreco.in/img/favicon.png" />
 
 	<!-- Modal component styles -->
 	<style>
@@ -669,6 +669,7 @@
 			const div = document.createElement('div');
 			div.innerHTML = `
 				<div class="notice"><strong>2-Week Bond:</strong> Lock coins to earn a ROI of <span class="value-chip badge-rate">${((1 + currentInterest) * 100).toFixed(2)}%</span> (includes principal).</div>
+				<div class="notice"><strong>Note:</strong> You can only hold one bond at a time. Bonds auto-credit to your account at maturity.</div>
 				<hr />
 				<form id="bond-form">
 					<div class="form-row">
