@@ -50,8 +50,23 @@
 
       /* Disco overlay */
       @keyframes egg-disco { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-      .egg-disco-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 2147482800; opacity: .25; mix-blend-mode: overlay; background: linear-gradient(60deg, #ff914d, #ff60a8, #3a86ff, #43e97b, #ffe53b); background-size: 400% 400%; animation: egg-disco 8s ease infinite; }
-      @media (prefers-reduced-motion: reduce) { .egg-disco-overlay { animation: none; background: linear-gradient(60deg, #ff914d, #3a86ff); } }
+      @keyframes egg-strobe { 0%, 82% { opacity: .52; } 88% { opacity: .32; } 100% { opacity: .52; } }
+      .egg-disco-overlay {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 2147482800;
+        opacity: .52; /* was .25 */
+        mix-blend-mode: hard-light; /* was overlay */
+        background: linear-gradient(60deg, #ff914d, #ff60a8, #3a86ff, #43e97b, #ffe53b, #ff914d);
+        background-size: 600% 600%; /* was 400% */
+        animation: egg-disco 4.5s cubic-bezier(.4,0,.2,1) infinite, egg-strobe 1.75s ease-in-out infinite; /* was 8s single anim */
+        filter: saturate(1.35) contrast(1.18);
+        will-change: background-position, opacity, transform;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .egg-disco-overlay { animation: none; background: linear-gradient(60deg, #ff914d, #3a86ff); opacity: .28; mix-blend-mode: overlay; filter: none; }
+      }
 
       /* Pulses */
       @keyframes egg-pulse { 0%{transform:scale(1); filter:brightness(1);} 50%{transform:scale(1.08); filter:brightness(1.25);} 100%{transform:scale(1); filter:brightness(1);} }
