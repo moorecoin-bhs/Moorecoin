@@ -233,6 +233,3 @@ See LICENSE.
 ## Disclaimer
 
 Educational / demonstration use; not financial currency.
-
----
-Pull requests
