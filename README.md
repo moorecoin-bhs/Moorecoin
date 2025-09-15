@@ -236,12 +236,27 @@ Educational / demonstration use; not financial currency.
 
 ## Easter Eggs (Maintainers)
 
-Lightweight, purely cosmetic easter eggs are included via `public/easter-eggs.js` and loaded on user‑facing pages:
+Lightweight, purely cosmetic easter eggs are included via `public/easter-eggs.js` and loaded on user‑facing pages. They’re intentionally mild and do not change balances or grant coins.
 
-- Konami code (↑ ↑ ↓ ↓ ← → ← → B A) triggers a brief coin confetti rain.
-- Shift+R toggles a retro theme; persisted in localStorage (`egg-retro`).
-- Clicking the logo 5 times within ~1.5s spins it and shows a toast.
-- Typing hidden words (moore, credits, stonks, retro) shows fun toasts or toggles retro.
-- On `404.html`, clicking the headline 3 times launches confetti, then returns to the home page.
+Discoverables:
 
-These are intentionally mild and do not change balances or grant coins.
+- Konami code (↑ ↑ ↓ ↓ ← → ← → B A) → brief coin confetti + toast
+- Hotkeys:
+  - Shift+R → Retro mode (persists via `localStorage: egg-retro`)
+  - Shift+M → Monochrome mode
+  - Shift+D → Disco overlay (reduced-motion friendly)
+- Click sequences:
+  - Click the logo 5× within ~1.5s → playful spin + toast
+  - Triple‑click the Moorecoins balance number → pulse + randomized tip
+  - On `404.html`, click the headline 3× → confetti + redirect home
+  - Double‑click the footer links area → small overlay credits card (auto-dismiss)
+- Long‑press hint: hover/touch‑hold the “Moorecoin value” area (~1.2s) → decay curve tip
+- Phrase triggers (type anywhere outside inputs):
+  - moore, credits, stonks, retro (existing)
+  - mono → enables monochrome
+  - party → enables disco overlay
+  - snow → ❄️ emoji confetti
+  - bunny → ASCII bunny toast
+  - idkfa → “no god mode” toast
+
+Reduced Motion: if the user has “Reduce Motion” enabled, confetti is replaced by a simple toast.

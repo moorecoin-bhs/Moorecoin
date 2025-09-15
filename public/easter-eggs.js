@@ -31,6 +31,25 @@
       body.egg-retro { background: radial-gradient(1200px 700px at 10% 10%, #fff0e0, #141414 65%); filter: saturate(1.2) contrast(1.05); }
       body.egg-retro * { image-rendering: pixelated; }
       body.egg-retro h1, body.egg-retro h2, body.egg-retro h3 { text-shadow: 0 2px 0 rgba(0,0,0,.25), 0 0 12px rgba(255,145,77,.25); letter-spacing: .5px; }
+
+      /* Mono mode */
+      body.egg-mono { filter: grayscale(1) contrast(1.05); }
+      body.egg-mono h1, body.egg-mono h2 { text-shadow: 0 0 0 transparent; }
+
+      /* Disco overlay */
+      @keyframes egg-disco { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+      .egg-disco-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 2147482800; opacity: .25; mix-blend-mode: overlay; background: linear-gradient(60deg, #ff914d, #ff60a8, #3a86ff, #43e97b, #ffe53b); background-size: 400% 400%; animation: egg-disco 8s ease infinite; }
+      @media (prefers-reduced-motion: reduce) { .egg-disco-overlay { animation: none; background: linear-gradient(60deg, #ff914d, #3a86ff); } }
+
+      /* Pulses */
+      @keyframes egg-pulse { 0%{transform:scale(1); filter:brightness(1);} 50%{transform:scale(1.08); filter:brightness(1.25);} 100%{transform:scale(1); filter:brightness(1);} }
+      .egg-pulse { animation: egg-pulse .6s ease; }
+
+      /* Center sheet */
+      .egg-sheet { position: fixed; inset: 0; display: grid; place-items: center; z-index: 2147483400; pointer-events: none; }
+      .egg-sheet .card { pointer-events: auto; background: rgba(20,22,26,.98); color: #e6edf7; border: 1px solid #2a323b; border-radius: 12px; padding: 14px 16px; box-shadow: 0 18px 50px -20px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.04) inset; min-width: 260px; max-width: min(92vw, 420px); }
+      .egg-sheet .card h3 { margin: 0 0 8px; font-size: 1rem; }
+      .egg-sheet .card p { margin: 0; font-size: .88rem; opacity: .9; }
     `;
     const style = document.createElement('style');
     style.id = 'egg-styles';
@@ -56,14 +75,13 @@
   }
 
   function coinEmoji() {
-    // rotate through a few for variety
     const options = ['🪙', '🟡', '💰', '✨'];
     return options[Math.floor(Math.random() * options.length)];
   }
 
-  function launchCoinConfetti(durationMs = 2200, count = 80) {
+  function launchEmojiConfetti({ symbols, durationMs = 2200, count = 80 }) {
     if (prefersReducedMotion()) {
-      showToast('Hidden unlocked: Konami Mode');
+      showToast('Secret unlocked');
       return;
     }
     injectStyles();
@@ -72,7 +90,8 @@
     for (let i = 0; i < count; i++) {
       const span = document.createElement('span');
       span.className = 'piece';
-      span.textContent = coinEmoji();
+      const pick = Array.isArray(symbols) ? symbols[Math.floor(Math.random() * symbols.length)] : (symbols?.() ?? '✨');
+      span.textContent = pick;
       const startLeft = Math.random() * 100; // vw
       const delay = Math.random() * 0.8; // s
       const fall = 2 + Math.random() * 1.5; // s
@@ -84,6 +103,10 @@
     }
     document.body.appendChild(wrap);
     setTimeout(() => wrap.remove(), durationMs + 2000);
+  }
+
+  function launchCoinConfetti(durationMs = 2200, count = 80) {
+    launchEmojiConfetti({ symbols: coinEmoji, durationMs, count });
   }
 
   function toggleRetro(on) {
@@ -106,6 +129,32 @@
     return tag === 'input' || tag === 'textarea' || ae.isContentEditable;
   }
 
+  function ensureDiscoOverlay() {
+    let el = document.querySelector('.egg-disco-overlay');
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'egg-disco-overlay';
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  function toggleMono(on) {
+    injectStyles();
+    const enable = on !== undefined ? on : !document.body.classList.contains('egg-mono');
+    document.body.classList.toggle('egg-mono', enable);
+    showToast(enable ? 'Monochrome: ON' : 'Monochrome: OFF');
+  }
+
+  function toggleDisco(on) {
+    injectStyles();
+    const overlay = ensureDiscoOverlay();
+    const enable = on !== undefined ? on : overlay.style.display === 'none' || overlay.dataset.active !== '1';
+    overlay.style.display = enable ? 'block' : 'none';
+    overlay.dataset.active = enable ? '1' : '0';
+    showToast(enable ? 'Disco Mode: ON' : 'Disco Mode: OFF');
+  }
+
   function handleKeydown(e) {
     // Konami detection
     const key = e.key;
@@ -124,6 +173,18 @@
     // Retro hotkey
     if ((e.shiftKey && (key === 'R' || key === 'r')) && !isTypingInForm()) {
       toggleRetro();
+      return;
+    }
+
+    // Mono hotkey
+    if ((e.shiftKey && (key === 'M' || key === 'm')) && !isTypingInForm()) {
+      toggleMono();
+      return;
+    }
+
+    // Disco hotkey
+    if ((e.shiftKey && (key === 'D' || key === 'd')) && !isTypingInForm()) {
+      toggleDisco();
       return;
     }
 
@@ -148,6 +209,21 @@
         STATE.typed = '';
       } else if (STATE.typed.includes('retro')) {
         toggleRetro(true);
+        STATE.typed = '';
+      } else if (STATE.typed.includes('mono')) {
+        toggleMono(true);
+        STATE.typed = '';
+      } else if (STATE.typed.includes('party')) {
+        toggleDisco(true);
+        STATE.typed = '';
+      } else if (STATE.typed.includes('bunny')) {
+        showToast('(\u00A0\u2022\u0308\u00A0\u00A0\u2022\u0308\u00A0)\u30CE  \u2514(\u00A0\u30FB\u25E1\u30FB)\u2518  \u273F');
+        STATE.typed = '';
+      } else if (STATE.typed.includes('idkfa')) {
+        showToast('God Mode? Not here—only Discipline Mode.');
+        STATE.typed = '';
+      } else if (STATE.typed.includes('snow')) {
+        launchEmojiConfetti({ symbols: ['❄️','✨','❅','❆'], count: 90, durationMs: 2600 });
         STATE.typed = '';
       }
     }
@@ -192,11 +268,80 @@
     });
   }
 
+  function initLongPressHints() {
+    // Long press the exchange rate area to see a nerd tip
+    const rateWrap = document.getElementById('moorecoin-value');
+    if (!rateWrap) return;
+    let timer = null;
+    function start() {
+      clear();
+      timer = setTimeout(() => {
+        showToast('Hint: As total supply grows, exchange rate decays (exp curve).');
+      }, 1200);
+    }
+    function clear() { if (timer) { clearTimeout(timer); timer = null; } }
+    rateWrap.addEventListener('mouseenter', start);
+    rateWrap.addEventListener('mouseleave', clear);
+    rateWrap.addEventListener('touchstart', start, { passive: true });
+    rateWrap.addEventListener('touchend', clear);
+    rateWrap.addEventListener('touchcancel', clear);
+  }
+
+  function initBalancePulse() {
+    const mc = document.getElementById('moorecoins');
+    if (!mc) return;
+    let clicks = [];
+    mc.style.cursor = 'pointer';
+    mc.title = ' '; // subtle hint
+    mc.addEventListener('click', () => {
+      const now = Date.now();
+      clicks = clicks.filter(t => now - t < 1000);
+      clicks.push(now);
+      if (clicks.length >= 3) {
+        clicks.length = 0;
+        mc.classList.remove('egg-pulse'); void mc.offsetWidth; mc.classList.add('egg-pulse');
+        const tips = [
+          'Tip: Exchange coins for EC, or try a bond for a set ROI.',
+          'Pro tip: Keep reserves before you roll the dice.',
+          'Hint: Bonds auto-credit at maturity—no manual claim needed.'
+        ];
+        showToast(tips[Math.floor(Math.random() * tips.length)]);
+      }
+    });
+  }
+
+  function initFooterCredits() {
+    const foot = document.getElementById('footer-content');
+    if (!foot) return;
+    let last = 0;
+    foot.addEventListener('dblclick', () => {
+      // Prevent spam
+      const now = Date.now(); if (now - last < 600) return; last = now;
+      injectStyles();
+      const sheet = document.createElement('div');
+      sheet.className = 'egg-sheet';
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = '<h3>Moorecoin Credits</h3><p>Made with curiosity by the Moorecoin team. Stay disciplined, compound often.</p>';
+      sheet.appendChild(card);
+      document.body.appendChild(sheet);
+      function close() { sheet.remove(); document.removeEventListener('keydown', onKey, true); }
+      function onKey(e){ if (e.key === 'Escape') close(); }
+      sheet.addEventListener('click', close);
+      document.addEventListener('keydown', onKey, true);
+      setTimeout(() => { card.focus?.(); }, 10);
+      setTimeout(() => { try { sheet.remove(); } catch {} }, 8000); // auto-dismiss
+    });
+  }
+
   function init() {
     injectStyles();
     initRetroFromStorage();
     initLogoClicks();
     init404Secret();
+    initLongPressHints();
+    initBalancePulse();
+    initFooterCredits();
     window.addEventListener('keydown', handleKeydown, { passive: true });
   }
 
