@@ -426,16 +426,51 @@
         return res.json();
       }
 
-      function extractHandleFromPath() {
+      function getHandleInfo() {
         const p = decodeURIComponent(location.pathname || "/");
-        if (!p.startsWith("/@")) return "me";
+        if (!p.startsWith("/@")) return { handle: "me", domain: null };
         const rest = p.substring(2); // remove '/@'
-        const seg = rest.split("/").filter(Boolean)[0] || "me";
-        return seg.toLowerCase();
+        let seg = rest.split("/").filter(Boolean)[0] || "me";
+        seg = seg.toLowerCase();
+        // If the segment itself contains an '@', treat it as local@domain
+        if (seg.includes("@")) {
+          const [local, domain] = seg.split("@");
+          return { handle: local || "me", domain: domain || null };
+        }
+        return { handle: seg, domain: null };
       }
 
-      async function findUserDocByHandlePublic(handle) {
+      async function findUserDocByHandlePublic(handle, domain = null) {
         // Prefix query on profile.email: handle@* (requires single-field index on profile.email)
+        if (domain) {
+          const exact = `${handle}@${domain}`;
+          try {
+            const db = getFirestore(app);
+            const usersRef = collection(db, "users");
+            const qx = query(
+              usersRef,
+              orderBy("profile.email"),
+              startAt(exact),
+              endAt(exact + "\uf8ff"),
+              limit(1),
+            );
+            const sx = await getDocs(qx);
+            if (!sx.empty) return { id: sx.docs[0].id, ...sx.docs[0].data() };
+          } catch (e) { console.warn("Exact profile.email query failed", e); }
+          try {
+            const db = getFirestore(app);
+            const usersRef = collection(db, "users");
+            const qx2 = query(
+              usersRef,
+              orderBy("email"),
+              startAt(exact),
+              endAt(exact + "\uf8ff"),
+              limit(1),
+            );
+            const sx2 = await getDocs(qx2);
+            if (!sx2.empty) return { id: sx2.docs[0].id, ...sx2.docs[0].data() };
+          } catch (e) { console.warn("Exact legacy email query failed", e); }
+        }
         try {
           const db = getFirestore(app);
           const usersRef = collection(db, "users");
@@ -606,7 +641,7 @@
       }
 
       (function main() {
-        const target = extractHandleFromPath();
+        const { handle: target, domain: domainFromPath } = getHandleInfo();
         const loadState = document.getElementById("load-state");
         onAuthStateChanged(auth, async (user) => {
           try {
@@ -615,7 +650,7 @@
               if (target === "me") {
                 setVisible("not-signed-in", true);
               } else {
-                const doc = await findUserDocByHandlePublic(target);
+                const doc = await findUserDocByHandlePublic(target, domainFromPath);
                 if (!doc) setVisible("not-found", true);
                 else renderUserDoc(doc, null, false, globalTotal);
               }
@@ -651,7 +686,7 @@
                 { once: true },
               );
             } else {
-              const doc = await findUserDocByHandlePublic(handleToUse);
+              const doc = await findUserDocByHandlePublic(handleToUse, domainFromPath);
               if (!doc) setVisible("not-found", true);
               else renderUserDoc(doc, user, false, globalTotal);
             }
