@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile • Moorecoin</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" type="image/png" href="./img/favicon.png" />
+    <style>
+      body { align-items: stretch; justify-content: flex-start; padding: 24px 14px 40px; }
+      .container { width: min(940px, 96vw); margin: 0 auto; }
+      .card { background: var(--card-bg, #1d1f23); color: var(--card-fg, #f5f7fa); border-radius: 16px; border: 1px solid rgba(128,128,128,.18); box-shadow: 0 6px 22px rgba(0,0,0,.18); padding: 18px 18px 16px; }
+      @media (prefers-color-scheme: light) { .card { background: #fff; color: #0f1115; border-color: rgba(0,0,0,.08); } .stat .label { color: #444; } }
+      header.me-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+      header.me-header img { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; background: #23262b; border: 1px solid rgba(128,128,128,.2); }
+      .header-text h2 { margin: 0 0 4px; font-size: 1.4rem; }
+      .header-text .muted { opacity: .78; font-size: .92rem; }
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+      .chip { padding: 4px 10px; border-radius: 999px; font-size: .74rem; font-weight: 700; letter-spacing: .6px; }
+      .chip-admin { background: #3b2a16; color: #ffd9a3; border: 1px solid #5a3d1d; }
+      .chip-hour { background: #213338; color: #a9ebff; border: 1px solid #2b4850; }
+      .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+      @media (min-width: 760px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+      .stat { background: rgba(128,128,128,.08); border: 1px solid rgba(128,128,128,.2); border-radius: 12px; padding: 12px 14px; }
+      .stat .label { font-size: .78rem; opacity: .8; margin-bottom: 6px; }
+      .stat .value { font-size: 1.1rem; font-weight: 700; }
+      .section-title { margin: 18px 6px 10px; opacity: .85; font-size: .92rem; letter-spacing: .3px; }
+      .row-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+      .btn { padding: 9px 14px; border-radius: 10px; border: 1px solid transparent; cursor: pointer; font-weight: 600; }
+      .btn-primary { background: linear-gradient(92deg,#4361ee,#3a86ff); color: white; }
+      .btn-secondary { background: #2c3138; color: #f5f7fa; border-color: #394048; }
+      @media (prefers-color-scheme: light) { .btn-secondary { background: #f1f3f6; color: #111; border-color: #e1e5ea; } }
+      .danger { background: #3b1b1b; color: #ffd5d5; border-color: #4a2222; }
+      .inline { display: inline-flex; align-items: center; gap: 8px; }
+      .input { background: #23262b; border: 1px solid #30343a; padding: 8px 10px; border-radius: 10px; color: inherit; }
+      @media (prefers-color-scheme: light) { .input { background: #fff; border-color: #d7dde5; } }
+      .muted { opacity: .75; font-size: .85rem; }
+      .empty { opacity: .7; padding: 8px; }
+      #load-state { margin: 20px 0; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="load-state" class="muted">Loading profile…</div>
+
+      <section id="me-card" class="card" style="display:none">
+        <header class="me-header">
+          <img id="avatar" src="./img/default-profile-picture.svg" alt="Profile" />
+          <div class="header-text">
+            <h2 id="name">Student</h2>
+            <div class="muted" id="email"></div>
+            <div class="chips">
+              <span id="chip-admin" class="chip chip-admin" style="display:none">ADMIN</span>
+              <span id="chip-hour" class="chip chip-hour" style="display:none">Hour <strong id="chip-hour-val">—</strong></span>
+            </div>
+          </div>
+        </header>
+
+        <div class="grid">
+          <div class="stat"><div class="label">Moorecoins</div><div class="value" id="coins">--</div></div>
+          <div class="stat"><div class="label">Total Earned</div><div class="value" id="earned">--</div></div>
+          <div class="stat">
+            <div class="label">Class Hour</div>
+            <div class="value" id="hour">--</div>
+            <div id="hour-setter" class="inline" style="margin-top:8px; display:none">
+              <label for="hour-input" class="muted">Set Hour</label>
+              <select id="hour-input" class="input">
+                <option value="">--</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+              </select>
+              <button id="hour-save" class="btn btn-primary">Save</button>
+            </div>
+          </div>
+          <div class="stat"><div class="label">Member Since</div><div class="value" id="created">--</div></div>
+          <div class="stat"><div class="label">Last Updated</div><div class="value" id="updated">--</div></div>
+          <div class="stat"><div class="label">Exchange Rate</div><div class="value">1 ≈ <span id="ex-rate">--</span> EC</div></div>
+          <div class="stat"><div class="label">2-Week Bond ROI</div><div class="value" id="roi">--%</div></div>
+        </div>
+
+        <h3 class="section-title" id="bond-title">Bond</h3>
+        <div id="bond" class="stat" role="region" aria-live="polite">
+          <div id="bond-empty" class="empty">No active bond.</div>
+          <div id="bond-info" style="display:none">
+            <div style="display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px;">
+              <div><div class="label">Amount</div><div class="value" id="bond-amount">--</div></div>
+              <div><div class="label">Expected Return</div><div class="value" id="bond-return">--</div></div>
+              <div><div class="label">Term</div><div class="value" id="bond-term">--</div></div>
+              <div><div class="label">ROI</div><div class="value" id="bond-roi">--%</div></div>
+              <div><div class="label">Purchased</div><div class="value" id="bond-purchased">--</div></div>
+              <div><div class="label">Payout</div><div class="value" id="bond-payout">--</div></div>
+            </div>
+            <div class="muted" style="margin-top:8px">Time to payout: <span id="bond-countdown">--:--:--</span></div>
+          </div>
+        </div>
+
+        <div class="row-actions">
+          <a class="btn btn-secondary" href="./dashboard.html">Back to Dashboard</a>
+          <button id="sign-out" class="btn danger">Sign Out</button>
+        </div>
+      </section>
+
+      <section id="not-signed-in" class="card" style="display:none">
+        <h2 style="margin-top:0">You're not signed in</h2>
+        <p class="muted">Sign in to view profiles.</p>
+        <div class="row-actions"><a class="btn btn-primary" href="./index.html">Go to Sign In</a></div>
+      </section>
+
+      <section id="not-found" class="card" style="display:none">
+        <h2 style="margin-top:0">Profile not available</h2>
+        <p class="muted">We couldn't find that profile, or you don't have permission to view it.</p>
+      </section>
+    </div>
+
+    <script type="module">
+      import { app, apiBase, calculateExchangeRate, calculateInterestRate } from './app.js';
+      import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
+      const auth = getAuth(app);
+      const $ = (id) => document.getElementById(id);
+      const fmt = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 0 });
+      const fmt2 = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+      const fmtPct = new Intl.NumberFormat(undefined, { style: 'percent', maximumFractionDigits: 2, minimumFractionDigits: 0 });
+      const d = (ts) => { if (!ts) return '--'; try { if (typeof ts === 'string') return new Date(ts).toLocaleString(); if (typeof ts === 'object' && 'seconds' in ts) return new Date(ts.seconds * 1000).toLocaleString(); } catch {} return String(ts); };
+      const setText = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+      const setVisible = (id, show) => { const el = $(id); if (el) el.style.display = show ? '' : 'none'; };
+
+      let countdownTimer = null;
+      function startBondCountdown(payoutAtIso) {
+        if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+        const span = $('bond-countdown'); if (!payoutAtIso || !span) return;
+        function pad(n){return String(n).padStart(2,'0');}
+        function tick(){ const now=Date.now(); const end=new Date(payoutAtIso).getTime(); let diff=Math.max(0,end-now); const h=Math.floor(diff/3_600_000); diff-=h*3_600_000; const m=Math.floor(diff/60_000); diff-=m*60_000; const s=Math.floor(diff/1000); span.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`; }
+        tick(); countdownTimer = setInterval(tick,1000);
+      }
+
+      async function authedGet(idToken, path) { const res = await fetch(`${apiBase}${path}`, { headers: { Authorization: `Bearer ${idToken}` } }); if (!res.ok) { const text = await res.text().catch(()=>''); throw new Error(`${path} failed (${res.status}): ${text}`); } return res.json(); }
+      async function patchHour(idToken, hour) { const res = await fetch(`${apiBase}/user/hour`, { method:'PATCH', headers:{ 'Content-Type':'application/json', Authorization: `Bearer ${idToken}` }, body: JSON.stringify({ hour: Number(hour) }) }); if (!res.ok) { const text = await res.text().catch(()=>'<no body>'); throw new Error(`/user/hour failed (${res.status}): ${text}`); } return res.json(); }
+
+      function extractHandleFromPath() {
+        const p = decodeURIComponent(location.pathname || '/');
+        if (!p.startsWith('/@')) return 'me';
+        const rest = p.substring(2); // remove '/@'
+        const seg = rest.split('/').filter(Boolean)[0] || 'me';
+        return seg.toLowerCase();
+      }
+
+      async function loadSelfView(idToken, user, globalTotal) {
+        // ensure exists
+        await authedGet(idToken, '/user/exists').catch(() => ({}));
+        const userDoc = await authedGet(idToken, '/user/info');
+        renderUserDoc(userDoc, user, true, globalTotal);
+      }
+
+      async function loadOtherViewAsAdmin(idToken, targetHandle, globalTotal) {
+        // Fetch admin users list and find email starting with handle+
+        const params = new URLSearchParams({ limit: '500', order: 'name', dir: 'asc' });
+        const res = await fetch(`${apiBase}/admin/users?${params.toString()}`, { headers: { Authorization: `Bearer ${idToken}` } });
+        if (!res.ok) return null;
+        const data = await res.json();
+        const users = Array.isArray(data?.users) ? data.users : [];
+        const match = users.find(u => typeof u.email === 'string' && u.email.toLowerCase().startsWith(`${targetHandle}@`));
+        if (!match) return null;
+        // Map to a userDoc-like structure minimal
+        const userDoc = {
+          profile: { displayName: match.displayName || null, photoURL: match.photoURL || null, email: match.email || null, createdAt: match.createdAt || null, hour: match.hour || null },
+          balances: { coins: Number(match.coins || 0), totalEarned: Number(match.totalEarned || 0) },
+          bond: null,
+          flags: { admin: !!match.admin },
+          lastUpdated: null,
+        };
+        renderUserDoc(userDoc, null, false, globalTotal);
+        return userDoc;
+      }
+
+      function renderUserDoc(userDoc, firebaseUser, viewingSelf, globalTotal) {
+        const ex = calculateExchangeRate(Number(globalTotal||0));
+        const roi = calculateInterestRate(Number(globalTotal||0));
+        setText('ex-rate', ex.toFixed(2));
+        setText('roi', fmtPct.format(roi));
+
+        const name = userDoc?.profile?.displayName ?? firebaseUser?.displayName ?? 'Student';
+        const email = userDoc?.profile?.email ?? firebaseUser?.email ?? '';
+        const photo = userDoc?.profile?.photoURL ?? firebaseUser?.photoURL ?? './img/default-profile-picture.svg';
+        $('avatar').src = photo || './img/default-profile-picture.svg';
+        setText('name', name);
+        setText('email', email);
+
+        const isAdmin = Boolean(userDoc?.flags?.admin ?? userDoc?.admin);
+        setVisible('chip-admin', isAdmin);
+        const hour = userDoc?.profile?.hour ?? userDoc?.hour ?? '';
+        setText('hour', hour || '—');
+        setVisible('chip-hour', !!hour);
+        setText('chip-hour-val', hour || '—');
+        setVisible('hour-setter', viewingSelf && !hour);
+
+        const coins = Number(userDoc?.balances?.coins ?? userDoc?.coins ?? 0);
+        const earned = Number(userDoc?.balances?.totalEarned ?? userDoc?.totalEarned ?? 0);
+        setText('coins', fmt2.format(coins));
+        setText('earned', fmt2.format(earned));
+
+        setText('created', d(userDoc?.profile?.createdAt));
+        setText('updated', d(userDoc?.lastUpdated));
+
+        // Bond only for self view (admin list doesn't include bond)
+        if (viewingSelf) {
+          const bond = userDoc?.bond || null;
+          if (bond) {
+            setVisible('bond-info', true); setVisible('bond-empty', false);
+            setText('bond-amount', fmt.format(bond.amount ?? 0));
+            setText('bond-return', fmt.format(bond.expectedReturn ?? 0));
+            setText('bond-term', `${bond.termDays ?? 0} days`);
+            setText('bond-roi', fmtPct.format(Number(bond.interestRate ?? 0)));
+            setText('bond-purchased', d(bond.purchasedAt));
+            setText('bond-payout', d(bond.payoutAt));
+            startBondCountdown(bond.payoutAt);
+          } else { setVisible('bond-info', false); setVisible('bond-empty', true); }
+        } else {
+          // Hide bond section entirely for other profiles (no data)
+          setVisible('bond', false);
+          setVisible('bond-title', false);
+        }
+
+        setVisible('me-card', true);
+        const so = $('sign-out');
+        so?.addEventListener('click', async () => { try { await signOut(auth); } finally { window.location.href = './index.html'; } }, { once: true });
+      }
+
+      function getGlobalTotal() { return fetch(`${apiBase}/stats/moorecoins/total`).then(r => r.json()).then(j => Number(j?.moorecoins)||0).catch(()=>0); }
+
+      function localPart(email){ return (email||'').split('@')[0]?.toLowerCase() || ''; }
+
+      (function main(){
+        const target = extractHandleFromPath();
+        const loadState = document.getElementById('load-state');
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) { setVisible('not-signed-in', true); loadState?.remove(); return; }
+          try {
+            const idToken = await user.getIdToken();
+            const globalTotal = await getGlobalTotal();
+            const selfHandle = localPart(user.email);
+            const handleToUse = target === 'me' ? selfHandle : target;
+            if (handleToUse === selfHandle) {
+              await loadSelfView(idToken, user, globalTotal);
+              // Wire hour setter if visible
+              const hourBtn = document.getElementById('hour-save');
+              hourBtn?.addEventListener('click', async () => {
+                const sel = document.getElementById('hour-input');
+                const val = sel?.value; if (!val) return; hourBtn.disabled = true;
+                try { await patchHour(idToken, val); setText('hour', val); setText('chip-hour-val', val); setVisible('chip-hour', true); setVisible('hour-setter', false); }
+                catch(e){ console.error(e); alert('Failed to set hour. It can only be set once.'); }
+                finally{ hourBtn.disabled = false; }
+              }, { once: true });
+            } else {
+              // Need admin to view other profiles
+              const adminDoc = await authedGet(idToken, '/user/info');
+              const isAdmin = Boolean(adminDoc?.flags?.admin ?? adminDoc?.admin);
+              if (!isAdmin) { setVisible('not-found', true); loadState?.remove(); return; }
+              const other = await loadOtherViewAsAdmin(idToken, handleToUse, globalTotal);
+              if (!other) { setVisible('not-found', true); }
+            }
+          } catch (e) {
+            console.error(e);
+            setText('load-state', 'Failed to load profile. Please refresh.');
+          } finally { loadState?.remove(); }
+        });
+      })();
+    </script>
+    <script type="module" src="./banner.js"></script>
+    <script src="./easter-eggs.js"></script>
+  </body>
+</html>

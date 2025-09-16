@@ -314,6 +314,8 @@
     </div>
 
     <script type="module">
+      // Soft redirect to new dynamic profile route to keep old link working
+      try { if (!location.pathname.endsWith('/@me')) location.replace('/@me'); } catch {}
       import {
         app,
         apiBase,

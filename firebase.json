@@ -8,6 +8,10 @@
   "hosting": {
     "public": "public",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "cleanUrls": true
+    "cleanUrls": true,
+    "rewrites": [
+      { "source": "/@:handle", "destination": "/@.html" },
+      { "source": "/@me", "destination": "/@.html" }
+    ]
   }
 }
