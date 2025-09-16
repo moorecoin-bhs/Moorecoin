@@ -15,6 +15,12 @@ service cloud.firestore {
       );
     }
 
+    // Public user profiles: allow read for everyone
+    match /users/{uid} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Default deny for everything else
     match /{document=**} {
       allow read: if false;

@@ -331,6 +331,16 @@
         onAuthStateChanged,
         signOut,
       } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        query,
+        orderBy,
+        startAt,
+        endAt,
+        limit,
+        getDocs,
+      } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
       const auth = getAuth(app);
       const $ = (id) => document.getElementById(id);
       const fmt = new Intl.NumberFormat(undefined, {
@@ -424,6 +434,44 @@
         return seg.toLowerCase();
       }
 
+      async function findUserDocByHandlePublic(handle) {
+        // Prefix query on profile.email: handle@* (requires single-field index on profile.email)
+        try {
+          const db = getFirestore(app);
+          const usersRef = collection(db, "users");
+          const prefix = `${handle}@`;
+          const q1 = query(
+            usersRef,
+            orderBy("profile.email"),
+            startAt(prefix),
+            endAt(prefix + "\uf8ff"),
+            limit(1),
+          );
+          const snap = await getDocs(q1);
+          if (!snap.empty) return { id: snap.docs[0].id, ...snap.docs[0].data() };
+        } catch (e) {
+          console.warn("Email prefix query failed or needs index", e);
+        }
+        // Fallback: legacy root email field
+        try {
+          const db = getFirestore(app);
+          const usersRef = collection(db, "users");
+          const prefix = `${handle}@`;
+          const q2 = query(
+            usersRef,
+            orderBy("email"),
+            startAt(prefix),
+            endAt(prefix + "\uf8ff"),
+            limit(1),
+          );
+          const snap2 = await getDocs(q2);
+          if (!snap2.empty) return { id: snap2.docs[0].id, ...snap2.docs[0].data() };
+        } catch (e) {
+          console.warn("Legacy email prefix query failed or needs index", e);
+        }
+        return null;
+      }
+
       async function loadSelfView(idToken, user, globalTotal) {
         // ensure exists
         await authedGet(idToken, "/user/exists").catch(() => ({}));
@@ -508,42 +556,40 @@
         setText("created", d(userDoc?.profile?.createdAt));
         setText("updated", d(userDoc?.lastUpdated));
 
-        // Bond only for self view (admin list doesn't include bond)
-        if (viewingSelf) {
-          const bond = userDoc?.bond || null;
-          if (bond) {
-            setVisible("bond-info", true);
-            setVisible("bond-empty", false);
-            setText("bond-amount", fmt.format(bond.amount ?? 0));
-            setText("bond-return", fmt.format(bond.expectedReturn ?? 0));
-            setText("bond-term", `${bond.termDays ?? 0} days`);
-            setText("bond-roi", fmtPct.format(Number(bond.interestRate ?? 0)));
-            setText("bond-purchased", d(bond.purchasedAt));
-            setText("bond-payout", d(bond.payoutAt));
-            startBondCountdown(bond.payoutAt);
-          } else {
-            setVisible("bond-info", false);
-            setVisible("bond-empty", true);
-          }
+        // Bond (show if present for anyone; countdown for active)
+        const bond = userDoc?.bond || null;
+        if (bond) {
+          setVisible("bond-info", true);
+          setVisible("bond-empty", false);
+          setText("bond-amount", fmt.format(bond.amount ?? 0));
+          setText("bond-return", fmt.format(bond.expectedReturn ?? 0));
+          setText("bond-term", `${bond.termDays ?? 0} days`);
+          setText("bond-roi", fmtPct.format(Number(bond.interestRate ?? 0)));
+          setText("bond-purchased", d(bond.purchasedAt));
+          setText("bond-payout", d(bond.payoutAt));
+          startBondCountdown(bond.payoutAt);
         } else {
-          // Hide bond section entirely for other profiles (no data)
-          setVisible("bond", false);
-          setVisible("bond-title", false);
+          setVisible("bond-info", false);
+          setVisible("bond-empty", true);
         }
 
         setVisible("me-card", true);
         const so = $("sign-out");
-        so?.addEventListener(
-          "click",
-          async () => {
-            try {
-              await signOut(auth);
-            } finally {
-              window.location.href = "./index.html";
-            }
-          },
-          { once: true },
-        );
+        if (firebaseUser) {
+          so?.addEventListener(
+            "click",
+            async () => {
+              try {
+                await signOut(auth);
+              } finally {
+                window.location.href = "./index.html";
+              }
+            },
+            { once: true },
+          );
+        } else if (so) {
+          so.style.display = "none";
+        }
       }
 
       function getGlobalTotal() {
@@ -561,19 +607,24 @@
         const target = extractHandleFromPath();
         const loadState = document.getElementById("load-state");
         onAuthStateChanged(auth, async (user) => {
-          if (!user) {
-            setVisible("not-signed-in", true);
-            loadState?.remove();
-            return;
-          }
           try {
-            const idToken = await user.getIdToken();
             const globalTotal = await getGlobalTotal();
+            if (!user) {
+              if (target === "me") {
+                setVisible("not-signed-in", true);
+              } else {
+                const doc = await findUserDocByHandlePublic(target);
+                if (!doc) setVisible("not-found", true);
+                else renderUserDoc(doc, null, false, globalTotal);
+              }
+              return;
+            }
+
+            const idToken = await user.getIdToken();
             const selfHandle = localPart(user.email);
             const handleToUse = target === "me" ? selfHandle : target;
             if (handleToUse === selfHandle) {
               await loadSelfView(idToken, user, globalTotal);
-              // Wire hour setter if visible
               const hourBtn = document.getElementById("hour-save");
               hourBtn?.addEventListener(
                 "click",
@@ -598,24 +649,9 @@
                 { once: true },
               );
             } else {
-              // Need admin to view other profiles
-              const adminDoc = await authedGet(idToken, "/user/info");
-              const isAdmin = Boolean(
-                adminDoc?.flags?.admin ?? adminDoc?.admin,
-              );
-              if (!isAdmin) {
-                setVisible("not-found", true);
-                loadState?.remove();
-                return;
-              }
-              const other = await loadOtherViewAsAdmin(
-                idToken,
-                handleToUse,
-                globalTotal,
-              );
-              if (!other) {
-                setVisible("not-found", true);
-              }
+              const doc = await findUserDocByHandlePublic(handleToUse);
+              if (!doc) setVisible("not-found", true);
+              else renderUserDoc(doc, user, false, globalTotal);
             }
           } catch (e) {
             console.error(e);
