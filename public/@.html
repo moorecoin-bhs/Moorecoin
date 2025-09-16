@@ -448,7 +448,8 @@
             limit(1),
           );
           const snap = await getDocs(q1);
-          if (!snap.empty) return { id: snap.docs[0].id, ...snap.docs[0].data() };
+          if (!snap.empty)
+            return { id: snap.docs[0].id, ...snap.docs[0].data() };
         } catch (e) {
           console.warn("Email prefix query failed or needs index", e);
         }
@@ -465,7 +466,8 @@
             limit(1),
           );
           const snap2 = await getDocs(q2);
-          if (!snap2.empty) return { id: snap2.docs[0].id, ...snap2.docs[0].data() };
+          if (!snap2.empty)
+            return { id: snap2.docs[0].id, ...snap2.docs[0].data() };
         } catch (e) {
           console.warn("Legacy email prefix query failed or needs index", e);
         }
