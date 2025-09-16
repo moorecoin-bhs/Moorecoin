@@ -456,7 +456,9 @@
             );
             const sx = await getDocs(qx);
             if (!sx.empty) return { id: sx.docs[0].id, ...sx.docs[0].data() };
-          } catch (e) { console.warn("Exact profile.email query failed", e); }
+          } catch (e) {
+            console.warn("Exact profile.email query failed", e);
+          }
           try {
             const db = getFirestore(app);
             const usersRef = collection(db, "users");
@@ -468,8 +470,11 @@
               limit(1),
             );
             const sx2 = await getDocs(qx2);
-            if (!sx2.empty) return { id: sx2.docs[0].id, ...sx2.docs[0].data() };
-          } catch (e) { console.warn("Exact legacy email query failed", e); }
+            if (!sx2.empty)
+              return { id: sx2.docs[0].id, ...sx2.docs[0].data() };
+          } catch (e) {
+            console.warn("Exact legacy email query failed", e);
+          }
         }
         try {
           const db = getFirestore(app);
@@ -650,7 +655,10 @@
               if (target === "me") {
                 setVisible("not-signed-in", true);
               } else {
-                const doc = await findUserDocByHandlePublic(target, domainFromPath);
+                const doc = await findUserDocByHandlePublic(
+                  target,
+                  domainFromPath,
+                );
                 if (!doc) setVisible("not-found", true);
                 else renderUserDoc(doc, null, false, globalTotal);
               }
@@ -686,7 +694,10 @@
                 { once: true },
               );
             } else {
-              const doc = await findUserDocByHandlePublic(handleToUse, domainFromPath);
+              const doc = await findUserDocByHandlePublic(
+                handleToUse,
+                domainFromPath,
+              );
               if (!doc) setVisible("not-found", true);
               else renderUserDoc(doc, user, false, globalTotal);
             }
