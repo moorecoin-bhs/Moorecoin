@@ -1,1 +1,9 @@
-{}
+{
+  "name": "moorecoin",
+  "version": "0.1.0",
+  "description": "Moorecoin wallet and node software",
+  "scripts": {
+    "format": "npx prettier --write .",
+    "format:check": "npx prettier --check ."
+  }
+}
