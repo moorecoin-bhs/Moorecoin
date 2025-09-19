@@ -60,7 +60,8 @@
       <section class="section">
         <h2>Contributors</h2>
         <p class="muted">Listed alphabetically.</p>
-        <ul class="chips">
+        <ul id="contributors-list" class="chips">
+          <!-- Fallback content if GitHub API fails or JS is disabled -->
           <li>@halleyscommet</li>
         </ul>
       </section>
@@ -114,5 +115,6 @@
 
     <script type="module" src="./banner.js"></script>
     <script src="./easter-eggs.js"></script>
+    <script src="./contributors.js"></script>
   </body>
 </html>
