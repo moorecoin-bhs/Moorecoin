@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feedback • Moorecoin</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" type="image/png" href="./img/favicon.png" />
+
+    <meta name="description" content="Share your thoughts about Moorecoin." />
+    <meta property="og:title" content="Feedback • Moorecoin" />
+    <meta
+      property="og:description"
+      content="Share your thoughts about Moorecoin."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mooreco.in/feedback.html" />
+    <meta property="og:image" content="https://mooreco.in/img/favicon.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Feedback • Moorecoin" />
+    <meta
+      name="twitter:description"
+      content="Share your thoughts about Moorecoin."
+    />
+    <meta name="twitter:image" content="https://mooreco.in/img/favicon.png" />
+  </head>
+
+  <body>
+    <main id="main" class="container">
+      <a href="./index.html" class="back-link">← Back to Home</a>
+
+      <header class="page-header">
+        <img src="./img/favicon.png" alt="Moorecoin Logo" class="page-logo" />
+        <h1>Feedback</h1>
+        <p class="muted">
+          We can't wait to hear from you. This form is a preview; submission is
+          disabled until backend is ready.
+        </p>
+      </header>
+
+      <form
+        class="feedback-form"
+        aria-describedby="feedback-note"
+        onsubmit="return false;"
+      >
+        <div class="row two-col">
+          <div class="field">
+            <label for="subject">Subject</label>
+            <input
+              id="subject"
+              name="subject"
+              type="text"
+              placeholder="Quick summary"
+              maxlength="120"
+            />
+          </div>
+          <div class="field">
+            <label for="category">Category</label>
+            <select id="category" name="category">
+              <option value="general">General</option>
+              <option value="bug">Bug report</option>
+              <option value="feature">Feature request</option>
+              <option value="ui">Design/UI</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea
+            id="message"
+            name="message"
+            placeholder="Tell us what you think…"
+            maxlength="2000"
+          ></textarea>
+          <div class="char-count" id="char-count">0 / 2000</div>
+        </div>
+
+        <div class="row two-col">
+          <div class="field">
+            <label for="rating">Rating</label>
+            <select id="rating" name="rating">
+              <option value="">No rating</option>
+              <option value="5">★★★★★</option>
+              <option value="4">★★★★☆</option>
+              <option value="3">★★★☆☆</option>
+              <option value="2">★★☆☆☆</option>
+              <option value="1">★☆☆☆☆</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="contact">Contact (optional)</label>
+            <input
+              id="contact"
+              name="contact"
+              type="email"
+              placeholder="you@example.com"
+            />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="button" id="save-draft" disabled>
+            Save draft
+          </button>
+          <button type="submit" class="button" id="submit" disabled>
+            Submit
+          </button>
+          <span class="note" id="feedback-note"
+            >Submission is disabled until backend is available.</span
+          >
+        </div>
+      </form>
+    </main>
+
+    <script>
+      // Client-only enhancements; no network calls.
+      (function () {
+        const msg = document.getElementById("message");
+        const cc = document.getElementById("char-count");
+        if (msg && cc) {
+          const update = () => {
+            cc.textContent = `${msg.value.length} / ${msg.maxLength}`;
+          };
+          msg.addEventListener("input", update);
+          update();
+        }
+      })();
+    </script>
+    <script type="module" src="./banner.js"></script>
+    <script src="./easter-eggs.js"></script>
+  </body>
+</html>

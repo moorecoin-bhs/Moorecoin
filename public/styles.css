@@ -37,3 +37,136 @@ img {
     color: #ffffff;
   }
 }
+
+/* Page layout helpers */
+.container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.page-logo {
+  height: 72px;
+  width: auto;
+  margin-bottom: 8px;
+}
+
+.muted {
+  opacity: 0.8;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.section {
+  width: 100%;
+  margin: 16px 0 24px;
+}
+
+.list {
+  padding-left: 20px;
+}
+
+.chips {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chips li {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.button {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Form styles for feedback */
+form.feedback-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: transparent;
+  color: inherit;
+}
+
+.field textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 640px) {
+  .row.two-col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.char-count {
+  font-size: 0.9em;
+  opacity: 0.75;
+}
+
+.note {
+  font-size: 0.95em;
+  opacity: 0.85;
+}
+
+/* Dark mode tweaks */
+@media (prefers-color-scheme: dark) {
+  .chips li,
+  .button,
+  .field input,
+  .field select,
+  .field textarea {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
