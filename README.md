@@ -1,5 +1,6 @@
 # Moorecoin
 
+25-09-22
 A classroom / community reward system. Users earn “Moorecoins”, view leaderboards, lock coins in time-based bonds for yield, and redeem (exchange) coins. Admins can award coins, manage users, clear pending redemptions, and monitor system health.
 
 Licensed under the [GNU AGPL v3](LICENSE).

@@ -1,6 +1,6 @@
 # Moorecoin API Documentation
 
-Version: 2025-09-12
+Version: 2025-09-22
 Base URL: (local) `http://localhost:5000` or your deployed host.
 All responses are JSON.
 
