@@ -1,18 +1,5 @@
 {
   "projects": {
     "default": "mooreco-in"
-  },
-  "targets": {
-    "mooreco-in": {
-      "hosting": {
-        "live": [
-          "mooreco-in"
-        ],
-        "test": [
-          "mooreco-in-test"
-        ]
-      }
-    }
-  },
-  "etags": {}
+  }
 }
