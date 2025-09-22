@@ -1308,7 +1308,7 @@
           if (t < 1) requestAnimationFrame(step);
           else {
             rouletteSpinResult = { index: idx, segment: targetSeg };
-            const isWin = Number(targetSeg.delta || 0) >= 0;
+            const isWin = Number(targetSeg.delta || 0) > 0;
             if (badge) {
               badge.style.display = "inline-flex";
               badge.textContent = `Result: ${targetSeg.label || targetSeg.delta}`;
