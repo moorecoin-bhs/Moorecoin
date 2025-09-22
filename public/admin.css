@@ -320,7 +320,11 @@ footer {
 /* Light mode overrides */
 @media (prefers-color-scheme: light) {
   .admin-header {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(249, 250, 251, 0.92));
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.92),
+      rgba(249, 250, 251, 0.92)
+    );
     border: 1px solid #e6eaf0;
     box-shadow: 0 4px 18px -6px rgba(0, 0, 0, 0.12);
   }
@@ -344,7 +348,9 @@ footer {
   .card {
     background: #ffffff;
     border: 1px solid #e6eaf0;
-    box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
+    box-shadow:
+      0 4px 14px -6px rgba(0, 0, 0, 0.12),
+      0 1px 2px rgba(0, 0, 0, 0.06);
   }
   .card.metric .value {
     color: #b55b18;
@@ -395,7 +401,9 @@ footer {
     background: #ffffff;
     color: #111;
     border: 1px solid #e1e5ea;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+    box-shadow:
+      0 8px 28px rgba(0, 0, 0, 0.12),
+      0 2px 6px rgba(0, 0, 0, 0.08);
   }
   .profile-menu hr {
     border-top: 1px solid #eef1f4;
