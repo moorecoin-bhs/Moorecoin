@@ -18,4 +18,4 @@ jobs:
         run: npm i -g firebase-tools
 
       - name: Deploy Hosting (Test)
-        run: firebase deploy --only hosting:test --project mooreco-in --non-interactive --token "${{ secrets.FIREBASE_TOKEN }}"
+        run: firebase deploy --only hosting:channel:gambling --project mooreco-in --non-interactive --token "${{ secrets.FIREBASE_TOKEN }}"
