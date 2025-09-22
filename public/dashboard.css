@@ -383,6 +383,176 @@ footer {
   margin-left: 4px;
 }
 
+/* Light mode overrides */
+@media (prefers-color-scheme: light) {
+  /* Profile dropdown */
+  .profile-menu {
+    background: #ffffff;
+    color: #111;
+    border: 1px solid #e1e5ea;
+    box-shadow:
+      0 8px 28px rgba(0, 0, 0, 0.12),
+      0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+  .profile-menu hr {
+    border-top: 1px solid #eef1f4;
+  }
+  .profile-menu-item {
+    color: #333;
+  }
+  .profile-menu-item:hover,
+  .profile-menu-item:focus {
+    background: #f3f5f8;
+    color: #111;
+  }
+  .profile-menu-item:active {
+    background: #e9edf3;
+  }
+
+  /* Top splash */
+  #investor-splash {
+    color: #7a3a0e; /* higher contrast on light */
+    background: linear-gradient(
+      135deg,
+      rgba(255, 145, 77, 0.14),
+      rgba(255, 96, 0, 0.04)
+    );
+    border: 1px solid rgba(255, 145, 77, 0.24);
+    box-shadow:
+      0 4px 14px -6px rgba(0, 0, 0, 0.2),
+      0 1px 3px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Balances */
+  #balance-container .subtext {
+    color: #666;
+  }
+  .balance-item {
+    color: #111;
+  }
+  .balance-symbol {
+    color: #ff6000;
+  }
+
+  /* Conversion/ROI */
+  #moorecoin-value {
+    color: #333;
+  }
+  #interest-rate {
+    color: #ff6000;
+  }
+
+  /* Primary actions */
+  #exchange-button,
+  #buy-bonds,
+  #casino-button,
+  #view-bond {
+    background-color: #ffffff;
+    color: #1f1f1f;
+    border: 1px solid #dadce0;
+    box-shadow:
+      0 1px 2px 0 rgba(60, 64, 67, 0.1),
+      0 1px 3px 1px rgba(60, 64, 67, 0.08);
+  }
+  #exchange-button:not(:disabled):hover,
+  #buy-bonds:not(:disabled):hover,
+  #casino-button:not(:disabled):hover,
+  #view-bond:not(:disabled):hover {
+    background-color: #f6f9fe;
+    border-color: #dadce0;
+    box-shadow:
+      0 2px 6px 0 rgba(60, 64, 67, 0.15),
+      0 1px 3px 1px rgba(60, 64, 67, 0.1);
+  }
+  #exchange-button:not(:disabled):active,
+  #buy-bonds:not(:disabled):active,
+  #casino-button:not(:disabled):active,
+  #view-bond:not(:disabled):active {
+    background-color: #e8f0fe;
+  }
+  #exchange-button:disabled,
+  #buy-bonds:disabled,
+  #casino-button:disabled,
+  #view-bond:disabled {
+    background-color: #f6f6f6;
+    border-color: #e7e7e7;
+    color: #9aa0a6;
+  }
+
+  /* Upcoming games (casino modal preview) */
+  .upcoming-games {
+    background: linear-gradient(135deg, #f9fafb, #f3f5f7);
+    border: 1px solid #e6eaf0;
+    box-shadow:
+      0 4px 14px -6px rgba(0, 0, 0, 0.12),
+      0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+  .mini-tag {
+    background: #eef2f7;
+    color: #4a5568;
+  }
+  .game-item {
+    background: #ffffff;
+    border: 1px solid #e6eaf0;
+  }
+  .game-item:hover {
+    background: #fafcff;
+    border-color: #dfe6f0;
+  }
+  .game-title {
+    color: #b55b18;
+  }
+  .game-desc {
+    color: #666;
+  }
+
+  /* Modal */
+  .modal {
+    background: #ffffff;
+    color: #111;
+    border: 1px solid #e1e5ea;
+    box-shadow:
+      0 6px 24px -6px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(0, 0, 0, 0.02) inset;
+  }
+  .modal-footer {
+    background: linear-gradient(#ffffff, #f6f8fa);
+    border-top: 1px solid #e8ecf2;
+  }
+  input[type="number"],
+  input[type="text"] {
+    background: #ffffff;
+    color: #111;
+    border: 1px solid #d7dde5;
+  }
+  .inline-info {
+    color: #4a5568;
+  }
+  .value-chip {
+    background: #eef4ff;
+    color: #2b6cb0;
+  }
+  .badge-rate {
+    background: #e8f5ef;
+    color: #0b7a4e;
+  }
+  .modal-body hr {
+    background: #edf1f5;
+  }
+  .notice {
+    background: #f7fafc;
+    border: 1px solid #e6ebf1;
+  }
+
+  /* Footer */
+  footer {
+    background: #f1f3f6;
+    color: #111;
+  }
+  #footer-content a {
+    color: #b55b18;
+  }
+}
 /* Upcoming games (casino modal) */
 .upcoming-games {
   background: linear-gradient(135deg, #1d2023, #181a1c);

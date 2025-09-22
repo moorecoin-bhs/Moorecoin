@@ -317,6 +317,101 @@ footer {
   color: #ff6000;
 }
 
+/* Light mode overrides */
+@media (prefers-color-scheme: light) {
+  .admin-header {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(249, 250, 251, 0.92));
+    border: 1px solid #e6eaf0;
+    box-shadow: 0 4px 18px -6px rgba(0, 0, 0, 0.12);
+  }
+  .section-tabs [role="tab"] {
+    background: #ffffff;
+    border: 1px solid #e1e5ea;
+    color: #222;
+  }
+  .section-tabs [role="tab"][aria-selected="true"] {
+    background: linear-gradient(135deg, #f6f8fa, #eef1f5);
+    color: #111;
+    border-color: #dbe3eb;
+    box-shadow:
+      0 2px 10px -4px rgba(0, 0, 0, 0.12),
+      0 0 0 1px rgba(0, 0, 0, 0.02) inset;
+  }
+  .section-tabs [role="tab"]:hover {
+    background: #f7f9fb;
+  }
+
+  .card {
+    background: #ffffff;
+    border: 1px solid #e6eaf0;
+    box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+  .card.metric .value {
+    color: #b55b18;
+  }
+
+  #user-sort,
+  #user-search {
+    background: #ffffff;
+    color: #111;
+    border: 1px solid #d7dde5;
+  }
+
+  .table-wrap {
+    background: #ffffff;
+    border: 1px solid #e6eaf0;
+    box-shadow: 0 4px 16px -8px rgba(0, 0, 0, 0.12);
+  }
+  thead {
+    background: #f6f8fa;
+  }
+  th,
+  td {
+    border-bottom: 1px solid #eef1f4;
+  }
+  tbody tr:hover {
+    background: #fafcff;
+  }
+
+  .chip {
+    background: #eef2f7;
+    color: #2d3748;
+  }
+  .chip-admin {
+    background: #e8f5ef;
+    color: #0b7a4e;
+  }
+
+  footer {
+    background: #f1f3f6;
+    color: #111;
+  }
+  #footer-content a {
+    color: #b55b18;
+  }
+
+  /* Profile dropdown reused */
+  .profile-menu {
+    background: #ffffff;
+    color: #111;
+    border: 1px solid #e1e5ea;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+  .profile-menu hr {
+    border-top: 1px solid #eef1f4;
+  }
+  .profile-menu-item {
+    color: #333;
+  }
+  .profile-menu-item:hover,
+  .profile-menu-item:focus {
+    background: #f3f5f8;
+    color: #111;
+  }
+  .profile-menu-item:active {
+    background: #e9edf3;
+  }
+}
 @media (max-width: 760px) {
   .cards {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

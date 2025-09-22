@@ -185,6 +185,55 @@
         color: #e5d9ff;
         border-color: #2b2247;
       }
+
+      /* Light mode overrides for inline admin components */
+      @media (prefers-color-scheme: light) {
+        .modal-overlay {
+          background: rgba(0, 0, 0, 0.35);
+        }
+        .modal {
+          background: #ffffff;
+          color: #111;
+          border: 1px solid #e1e5ea;
+          box-shadow:
+            0 6px 24px -6px rgba(0, 0, 0, 0.2),
+            0 0 0 1px rgba(0, 0, 0, 0.02) inset;
+        }
+        .modal-footer {
+          background: linear-gradient(#ffffff, #f6f8fa);
+          border-top: 1px solid #e8ecf2;
+        }
+        .btn-secondary {
+          background: #f1f3f6;
+          color: #111;
+          border-color: #e1e5ea;
+        }
+        .banner-info {
+          background: #e8f1ff;
+          color: #2b6cb0;
+          border-color: #d6e4ff;
+        }
+        .banner-success {
+          background: #e6fbf2;
+          color: #0b7a4e;
+          border-color: #c7f5e3;
+        }
+        .banner-warning {
+          background: #fff4e5;
+          color: #7a4a0b;
+          border-color: #ffe6c7;
+        }
+        .banner-danger {
+          background: #ffe8e8;
+          color: #7a0b0b;
+          border-color: #ffd1d1;
+        }
+        .banner-promo {
+          background: #efe9ff;
+          color: #4a2db0;
+          border-color: #e2d6ff;
+        }
+      }
     </style>
   </head>
 

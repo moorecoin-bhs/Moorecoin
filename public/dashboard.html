@@ -233,6 +233,49 @@
       .link-like:hover {
         text-decoration: underline;
       }
+
+      /* Light mode overrides for inline modal styles */
+      @media (prefers-color-scheme: light) {
+        .modal-overlay {
+          background: rgba(0, 0, 0, 0.35);
+        }
+        .modal {
+          background: #ffffff;
+          color: #111;
+          border: 1px solid #e1e5ea;
+          box-shadow:
+            0 6px 24px -6px rgba(0, 0, 0, 0.2),
+            0 0 0 1px rgba(0, 0, 0, 0.02) inset;
+        }
+        .modal-footer {
+          background: linear-gradient(#ffffff, #f6f8fa);
+          border-top: 1px solid #e8ecf2;
+        }
+        input[type="number"],
+        input[type="text"] {
+          background: #ffffff;
+          color: #111;
+          border: 1px solid #d7dde5;
+        }
+        .inline-info {
+          color: #4a5568;
+        }
+        .value-chip {
+          background: #eef4ff;
+          color: #2b6cb0;
+        }
+        .badge-rate {
+          background: #e8f5ef;
+          color: #0b7a4e;
+        }
+        .modal-body hr {
+          background: #edf1f5;
+        }
+        .notice {
+          background: #f7fafc;
+          border: 1px solid #e6ebf1;
+        }
+      }
     </style>
   </head>
 
