@@ -1033,6 +1033,10 @@
         if (!rouletteEffectsEnabled) return;
         const layer = document.getElementById("roulette-confetti");
         if (!layer) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const rect = layer.getBoundingClientRect();
+  const width = rect.width || 320;
+  const height = rect.height || 320;
         const colors = [
           "#ffbe0b",
           "#fb5607",
@@ -1049,11 +1053,16 @@
           s.style.height = `${size * (0.5 + Math.random())}px`;
           s.style.left = `${10 + Math.random() * 80}%`;
           s.style.background = colors[i % colors.length];
-          s.style.setProperty("--tx", `${-40 + Math.random() * 80}%`);
+          // Compute drift in pixels for consistent travel distance
+          const tx = (-0.4 + Math.random() * 0.8) * width; // -40%..40% of layer width
+          const ty = height * (1.15 + Math.random() * 0.2); // fall beyond bottom
+          s.style.setProperty("--tx", `${tx}px`);
+          s.style.setProperty("--ty", `${ty}px`);
           s.style.setProperty("--rz", `${Math.random() * 720 - 360}deg`);
-          s.style.animationDuration = `${0.9 + Math.random() * 0.9}s`;
+          const dur = 0.95 + Math.random() * 0.95;
+          s.style.animationDuration = `${dur}s`;
           layer.appendChild(s);
-          setTimeout(() => s.remove(), 1800);
+          setTimeout(() => s.remove(), Math.ceil(dur * 1000) + 400);
         }
       }
       function shakeStage() {
@@ -1130,13 +1139,9 @@
         const effectsEl = document.getElementById("roulette-effects");
         if (effectsEl) {
           effectsEl.checked = rouletteEffectsEnabled;
-          effectsEl.addEventListener(
-            "change",
-            () => {
-              rouletteEffectsEnabled = !!effectsEl.checked;
-            },
-            { once: true },
-          );
+          effectsEl.addEventListener("change", () => {
+            rouletteEffectsEnabled = !!effectsEl.checked;
+          });
         }
         renderSegForm();
       }

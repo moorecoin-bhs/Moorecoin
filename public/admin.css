@@ -150,6 +150,7 @@ button.btn-secondary {
   inset: 0;
   overflow: visible;
   pointer-events: none;
+  z-index: 5; /* ensure confetti renders above canvas and controls */
 }
 .confetti-piece {
   position: absolute;
@@ -158,16 +159,13 @@ button.btn-secondary {
   border-radius: 2px;
   opacity: 0.95;
   animation-name: confetti-fall, confetti-rot;
-  animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1), linear;
+  animation-timing-function: cubic-bezier(.2,.7,.2,1), linear;
   animation-iteration-count: 1, 1;
+  will-change: transform, filter, opacity;
 }
 @keyframes confetti-fall {
-  0% {
-    transform: translateX(0) translateY(0) rotate(0deg);
-  }
-  100% {
-    transform: translateX(var(--tx, 0)) translateY(105%) rotate(var(--rz, 0deg));
-  }
+  0% { transform: translateX(0px) translateY(0px) rotate(0deg); }
+  100% { transform: translateX(var(--tx, 0px)) translateY(var(--ty, 120%)) rotate(var(--rz, 0deg)); }
 }
 @keyframes confetti-rot {
   0% {
@@ -227,6 +225,19 @@ button.btn-secondary {
 .result-badge.loss {
   background: #4a1f1f;
   color: #ff9b9b;
+}
+
+/* Reduced motion: tone down animations */
+@media (prefers-reduced-motion: reduce) {
+  .confetti-piece {
+    animation: none;
+    opacity: 0.9;
+  }
+  .shake,
+  .canvas-glow,
+  .result-badge.pop {
+    animation: none !important;
+  }
 }
 
 /* Users table */
