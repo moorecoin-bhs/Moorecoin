@@ -603,52 +603,118 @@
         aria-labelledby="tab-roulette"
         hidden
       >
-        <div class="users-header" style="align-items:flex-start; gap:14px; flex-wrap:wrap;">
-          <h2 style="margin-top:6px">Roulette</h2>
-          <div class="users-actions" style="flex-wrap:wrap; gap:10px;">
-            <button class="btn-secondary" id="roulette-load">Reload Config</button>
+        <div
+          class="users-header"
+          style="align-items: flex-start; gap: 14px; flex-wrap: wrap"
+        >
+          <h2 style="margin-top: 6px">Roulette</h2>
+          <div class="users-actions" style="flex-wrap: wrap; gap: 10px">
+            <button class="btn-secondary" id="roulette-load">
+              Reload Config
+            </button>
             <button class="btn-primary" id="roulette-save">Save Config</button>
-            <button class="btn-secondary" id="roulette-reset" title="Reset to simple defaults">Reset</button>
+            <button
+              class="btn-secondary"
+              id="roulette-reset"
+              title="Reset to simple defaults"
+            >
+              Reset
+            </button>
           </div>
         </div>
-        <div class="card" style="display:grid; grid-template-columns: 320px 1fr; gap:16px; align-items:stretch;">
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <canvas id="roulette-canvas" width="320" height="320" style="background:#121418; border:1px solid #2e3238; border-radius:12px; width:100%; height:auto;"></canvas>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <div
+          class="card"
+          style="
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 16px;
+            align-items: stretch;
+          "
+        >
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <canvas
+              id="roulette-canvas"
+              width="320"
+              height="320"
+              style="
+                background: #121418;
+                border: 1px solid #2e3238;
+                border-radius: 12px;
+                width: 100%;
+                height: auto;
+              "
+            ></canvas>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
               <button class="btn-primary" id="roulette-spin">Spin</button>
-              <button class="btn-secondary" id="roulette-apply">Apply Result</button>
-              <span id="roulette-result" class="value-chip" style="display:none"></span>
+              <button class="btn-secondary" id="roulette-apply">
+                Apply Result
+              </button>
+              <span
+                id="roulette-result"
+                class="value-chip"
+                style="display: none"
+              ></span>
             </div>
           </div>
           <div>
-            <h3 style="margin-top:0">Wheel Configuration</h3>
-            <div class="two-col" style="grid-template-columns: 1fr 1fr;">
+            <h3 style="margin-top: 0">Wheel Configuration</h3>
+            <div class="two-col" style="grid-template-columns: 1fr 1fr">
               <div class="form-row">
                 <label for="roulette-entry">Entry Cost (coins)</label>
-                <input id="roulette-entry" type="number" min="0" step="1" value="1" />
+                <input
+                  id="roulette-entry"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value="1"
+                />
               </div>
-              <div class="form-row" style="display:flex; align-items:center; gap:8px;">
-                <label style="display:flex; align-items:center; gap:8px; margin:0;">
-                  <input id="roulette-clamp" type="checkbox" checked /> Prevent negative balances
+              <div
+                class="form-row"
+                style="display: flex; align-items: center; gap: 8px"
+              >
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin: 0;
+                  "
+                >
+                  <input id="roulette-clamp" type="checkbox" checked /> Prevent
+                  negative balances
                 </label>
               </div>
             </div>
             <div class="form-row">
               <label>Segments</label>
               <div id="roulette-segments"></div>
-              <div style="display:flex; gap:8px; margin-top:8px;">
-                <button class="btn-secondary" id="segment-add">Add Segment</button>
-                <button class="btn-secondary" id="segment-balance">Normalize Weights</button>
+              <div style="display: flex; gap: 8px; margin-top: 8px">
+                <button class="btn-secondary" id="segment-add">
+                  Add Segment
+                </button>
+                <button class="btn-secondary" id="segment-balance">
+                  Normalize Weights
+                </button>
               </div>
-              <div class="inline-info">Each segment has a label (display), delta (coins added or removed), color, and weight (relative odds). Example: label "+5", delta 5, weight 3.</div>
+              <div class="inline-info">
+                Each segment has a label (display), delta (coins added or
+                removed), color, and weight (relative odds). Example: label
+                "+5", delta 5, weight 3.
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="card" style="margin-top:16px;">
-          <h3 style="margin-top:0">Participants</h3>
-          <div class="users-actions" style="gap:8px; flex-wrap:wrap;">
-            <input type="search" id="roulette-search" placeholder="Search name/email" aria-label="Search participants" />
+        <div class="card" style="margin-top: 16px">
+          <h3 style="margin-top: 0">Participants</h3>
+          <div class="users-actions" style="gap: 8px; flex-wrap: wrap">
+            <input
+              type="search"
+              id="roulette-search"
+              placeholder="Search name/email"
+              aria-label="Search participants"
+            />
             <select id="roulette-hour" aria-label="Filter by hour">
               <option value="">All Hours</option>
               <option value="1">Hour 1</option>
@@ -659,16 +725,27 @@
               <option value="6">Hour 6</option>
               <option value="none">No hour</option>
             </select>
-            <button class="btn-secondary" id="roulette-reload">Reload Users</button>
+            <button class="btn-secondary" id="roulette-reload">
+              Reload Users
+            </button>
             <button class="btn-secondary" id="select-all">Select All</button>
             <button class="btn-secondary" id="select-none">Select None</button>
           </div>
-          <div class="table-wrap" tabindex="0" style="max-height: 320px; overflow:auto;">
-            <table id="roulette-users" aria-describedby="roulette-users-caption">
-              <caption id="roulette-users-caption">Select students to include in the spin result application.</caption>
+          <div
+            class="table-wrap"
+            tabindex="0"
+            style="max-height: 320px; overflow: auto"
+          >
+            <table
+              id="roulette-users"
+              aria-describedby="roulette-users-caption"
+            >
+              <caption id="roulette-users-caption">
+                Select students to include in the spin result application.
+              </caption>
               <thead>
                 <tr>
-                  <th style="width:34px;"></th>
+                  <th style="width: 34px"></th>
                   <th>Name</th>
                   <th>Email</th>
                   <th>Coins</th>
@@ -676,7 +753,11 @@
                 </tr>
               </thead>
               <tbody id="roulette-users-tbody">
-                <tr><td colspan="5" style="text-align:center; opacity:.7;">Load users…</td></tr>
+                <tr>
+                  <td colspan="5" style="text-align: center; opacity: 0.7">
+                    Load users…
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -907,9 +988,8 @@
         rouletteCfg.entryCost = Number(
           document.getElementById("roulette-entry")?.value || 0,
         );
-        rouletteCfg.clampNoNegative = !!document.getElementById(
-          "roulette-clamp",
-        )?.checked;
+        rouletteCfg.clampNoNegative =
+          !!document.getElementById("roulette-clamp")?.checked;
       }
       function fillFormFromCfg() {
         document.getElementById("roulette-entry").value = String(
@@ -923,8 +1003,10 @@
       function normalizeWeights() {
         if (!rouletteCfg?.segments?.length) return;
         const avg =
-          rouletteCfg.segments.reduce((a, b) => a + (Number(b.weight) || 1), 0) /
-          rouletteCfg.segments.length;
+          rouletteCfg.segments.reduce(
+            (a, b) => a + (Number(b.weight) || 1),
+            0,
+          ) / rouletteCfg.segments.length;
         rouletteCfg.segments = rouletteCfg.segments.map((s) => ({
           ...s,
           weight: Math.max(1, Math.round(s.weight / avg)) || 1,
@@ -965,7 +1047,10 @@
           // text
           const mid = start + sweep / 2;
           ctx.save();
-          ctx.translate(cx + Math.cos(mid) * (radius * 0.6), cy + Math.sin(mid) * (radius * 0.6));
+          ctx.translate(
+            cx + Math.cos(mid) * (radius * 0.6),
+            cy + Math.sin(mid) * (radius * 0.6),
+          );
           ctx.rotate(mid + Math.PI / 2);
           ctx.fillStyle = "#fff";
           ctx.font = "bold 16px system-ui, -apple-system, Segoe UI, Roboto";
@@ -988,7 +1073,9 @@
           const db = getFirestore(app);
           const ref = doc(db, "config", "roulette");
           const snap = await getDoc(ref);
-          rouletteCfg = snap.exists() ? { ...R_DEFAULT, ...snap.data() } : structuredClone(R_DEFAULT);
+          rouletteCfg = snap.exists()
+            ? { ...R_DEFAULT, ...snap.data() }
+            : structuredClone(R_DEFAULT);
           fillFormFromCfg();
           drawRoulette();
         } catch (e) {
@@ -1027,13 +1114,15 @@
         applySegFormToModel();
         const segs = rouletteCfg.segments || [];
         if (!segs.length) return;
-        const idx = pickWeightedIndex(segs.map((s) => Math.max(1, Number(s.weight || 1))));
+        const idx = pickWeightedIndex(
+          segs.map((s) => Math.max(1, Number(s.weight || 1))),
+        );
         const targetSeg = segs[idx];
         // Determine angle range of target segment (based on current draw function math)
         const totalWeight = segs.reduce((a, s) => a + (s.weight || 1), 0);
         let start = -Math.PI / 2; // starting reference for drawRoulette when spinAngle=0
         let accum = 0;
-        for (let i = 0; i < idx; i++) accum += (segs[i].weight || 1);
+        for (let i = 0; i < idx; i++) accum += segs[i].weight || 1;
         const fracStart = accum / totalWeight;
         const fracMid = fracStart + (segs[idx].weight || 1) / totalWeight / 2;
         const midAngle = start + fracMid * Math.PI * 2;
@@ -1043,12 +1132,14 @@
         const duration = 2400 + Math.random() * 900; // 2.4-3.3s
         const extraTurns = 4 + Math.floor(Math.random() * 3); // 4-6 extra spins
         let startTs = null;
-        function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+        function easeOutCubic(t) {
+          return 1 - Math.pow(1 - t, 3);
+        }
         function step(ts) {
           if (!startTs) startTs = ts;
           const t = Math.min(1, (ts - startTs) / duration);
           const eased = easeOutCubic(t);
-          const angle = (eased * (extraTurns * Math.PI * 2 + targetAngle));
+          const angle = eased * (extraTurns * Math.PI * 2 + targetAngle);
           drawRoulette(angle);
           if (t < 1) requestAnimationFrame(step);
           else {
@@ -1068,14 +1159,22 @@
         const tbody = document.getElementById("roulette-users-tbody");
         const status = document.getElementById("roulette-users-status");
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; opacity:.7;">Loading…</td></tr>';
+        tbody.innerHTML =
+          '<tr><td colspan="5" style="text-align:center; opacity:.7;">Loading…</td></tr>';
         status.textContent = "Fetching users…";
         try {
           if (!currentIdToken) throw new Error("Not authed");
-          const params = new URLSearchParams({ limit: "200", order: "coins", dir: "desc" });
-          const res = await fetch(`${apiBase}/admin/users?${params.toString()}`, {
-            headers: { Authorization: `Bearer ${currentIdToken}` },
+          const params = new URLSearchParams({
+            limit: "200",
+            order: "coins",
+            dir: "desc",
           });
+          const res = await fetch(
+            `${apiBase}/admin/users?${params.toString()}`,
+            {
+              headers: { Authorization: `Bearer ${currentIdToken}` },
+            },
+          );
           const json = await res.json();
           if (!res.ok) throw new Error(json.error || "Request failed");
           const users = json.users || [];
@@ -1085,13 +1184,13 @@
               const email = u.email || "";
               const coinsNum = Number(u.coins || 0);
               const coins = coinsNum.toLocaleString();
-              const hour = u.hour ?? (u.profile?.hour);
-              return `<tr data-uid="${u.uid}" data-name="${(name || '').toLowerCase()}" data-email="${(email || '').toLowerCase()}" data-hour="${hour ?? ''}" data-coins="${coinsNum}">
+              const hour = u.hour ?? u.profile?.hour;
+              return `<tr data-uid="${u.uid}" data-name="${(name || "").toLowerCase()}" data-email="${(email || "").toLowerCase()}" data-hour="${hour ?? ""}" data-coins="${coinsNum}">
                         <td><input type="checkbox" class="ru-check"></td>
                         <td>${name}</td>
                         <td>${email}</td>
                         <td class="num">${coins}</td>
-                        <td class="num">${hour ?? ''}</td>
+                        <td class="num">${hour ?? ""}</td>
                       </tr>`;
             })
             .join("");
@@ -1102,14 +1201,16 @@
         }
       }
       function filterRouletteUsers() {
-        const q = document.getElementById("roulette-search").value.toLowerCase();
+        const q = document
+          .getElementById("roulette-search")
+          .value.toLowerCase();
         const hour = document.getElementById("roulette-hour").value;
         const rows = document.querySelectorAll("#roulette-users-tbody tr");
         rows.forEach((r) => {
           const nm = r.dataset.name || "";
           const em = r.dataset.email || "";
           const hr = String(r.dataset.hour || "");
-          let ok = (nm.includes(q) || em.includes(q));
+          let ok = nm.includes(q) || em.includes(q);
           if (hour) {
             if (hour === "none") ok = ok && (hr === "" || hr === "undefined");
             else ok = ok && hr === hour;
@@ -1122,12 +1223,15 @@
         const ids = [];
         rows.forEach((r) => {
           const cb = r.querySelector(".ru-check");
-          if (cb && cb.checked && r.style.display !== "none") ids.push(r.dataset.uid);
+          if (cb && cb.checked && r.style.display !== "none")
+            ids.push(r.dataset.uid);
         });
         return ids;
       }
       function selectAllRouletteUsers(val) {
-        document.querySelectorAll("#roulette-users-tbody .ru-check").forEach((cb) => (cb.checked = val));
+        document
+          .querySelectorAll("#roulette-users-tbody .ru-check")
+          .forEach((cb) => (cb.checked = val));
       }
 
       async function applyRouletteResult() {
@@ -1142,16 +1246,26 @@
         }
         // Confirm summary
         const seg = rouletteSpinResult.segment;
-        const entry = Number(document.getElementById("roulette-entry").value || 0);
+        const entry = Number(
+          document.getElementById("roulette-entry").value || 0,
+        );
         const clamp = !!document.getElementById("roulette-clamp").checked;
-        if (!confirm(`Apply result \"${seg.label || seg.delta}\" (delta ${seg.delta >= 0 ? "+" : ""}${seg.delta} coins) to ${ids.length} students? Entry cost ${entry}.`)) return;
+        if (
+          !confirm(
+            `Apply result \"${seg.label || seg.delta}\" (delta ${seg.delta >= 0 ? "+" : ""}${seg.delta} coins) to ${ids.length} students? Entry cost ${entry}.`,
+          )
+        )
+          return;
         // Apply per-user using existing admin API
         const statusEl = document.getElementById("roulette-users-status");
-        let ok = 0, fail = 0;
+        let ok = 0,
+          fail = 0;
         for (const uid of ids) {
           try {
             // Get current coins from the table dataset
-            const row = document.querySelector(`#roulette-users-tbody tr[data-uid="${uid}"]`);
+            const row = document.querySelector(
+              `#roulette-users-tbody tr[data-uid="${uid}"]`,
+            );
             let coins = Number(row?.dataset.coins || 0);
             let next = coins - entry + Number(seg.delta || 0);
             if (clamp && next < 0) next = 0;
@@ -1185,26 +1299,53 @@
       }
 
       // Bind Roulette UI events
-      document.getElementById("roulette-load")?.addEventListener("click", loadRouletteConfig);
-      document.getElementById("roulette-save")?.addEventListener("click", () => saveRouletteConfig(auth.currentUser));
-      document.getElementById("roulette-reset")?.addEventListener("click", () => {
-        rouletteCfg = structuredClone(R_DEFAULT);
-        fillFormFromCfg();
-        drawRoulette();
-      });
+      document
+        .getElementById("roulette-load")
+        ?.addEventListener("click", loadRouletteConfig);
+      document
+        .getElementById("roulette-save")
+        ?.addEventListener("click", () => saveRouletteConfig(auth.currentUser));
+      document
+        .getElementById("roulette-reset")
+        ?.addEventListener("click", () => {
+          rouletteCfg = structuredClone(R_DEFAULT);
+          fillFormFromCfg();
+          drawRoulette();
+        });
       document.getElementById("segment-add")?.addEventListener("click", () => {
-        rouletteCfg.segments.push({ label: "+1", delta: 1, color: "#4cc9f0", weight: 1 });
+        rouletteCfg.segments.push({
+          label: "+1",
+          delta: 1,
+          color: "#4cc9f0",
+          weight: 1,
+        });
         renderSegForm();
         drawRoulette();
       });
-      document.getElementById("segment-balance")?.addEventListener("click", normalizeWeights);
-      document.getElementById("roulette-spin")?.addEventListener("click", spinRoulette);
-      document.getElementById("roulette-apply")?.addEventListener("click", applyRouletteResult);
-      document.getElementById("roulette-search")?.addEventListener("input", filterRouletteUsers);
-      document.getElementById("roulette-hour")?.addEventListener("change", filterRouletteUsers);
-      document.getElementById("roulette-reload")?.addEventListener("click", loadRouletteUsers);
-      document.getElementById("select-all")?.addEventListener("click", () => selectAllRouletteUsers(true));
-      document.getElementById("select-none")?.addEventListener("click", () => selectAllRouletteUsers(false));
+      document
+        .getElementById("segment-balance")
+        ?.addEventListener("click", normalizeWeights);
+      document
+        .getElementById("roulette-spin")
+        ?.addEventListener("click", spinRoulette);
+      document
+        .getElementById("roulette-apply")
+        ?.addEventListener("click", applyRouletteResult);
+      document
+        .getElementById("roulette-search")
+        ?.addEventListener("input", filterRouletteUsers);
+      document
+        .getElementById("roulette-hour")
+        ?.addEventListener("change", filterRouletteUsers);
+      document
+        .getElementById("roulette-reload")
+        ?.addEventListener("click", loadRouletteUsers);
+      document
+        .getElementById("select-all")
+        ?.addEventListener("click", () => selectAllRouletteUsers(true));
+      document
+        .getElementById("select-none")
+        ?.addEventListener("click", () => selectAllRouletteUsers(false));
 
       // Data loaders
       async function loadStats() {
