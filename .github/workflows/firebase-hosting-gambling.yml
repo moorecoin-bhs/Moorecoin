@@ -3,19 +3,37 @@ name: Deploy to Firebase Hosting (gambling)
 on:
   push:
     branches: [gambling]
-    paths:
-      - "public/**"
-      - "firebase.json"
-      - ".firebaserc"
+
+concurrency:
+  group: firebase-hosting-gambling-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: mooreco-in
+      CHANNEL: gambling
+      TARGET: test
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Firebase CLI
         run: npm i -g firebase-tools
 
-      - name: Deploy Hosting (Test)
-        run: firebase hosting:channel:deploy gambling --only test --project mooreco-in --non-interactive --token "${{ secrets.FIREBASE_TOKEN }}"
+      - name: Verify authentication secret
+        run: |
+          if [ -z "${FIREBASE_TOKEN}" ]; then
+            echo "FIREBASE_TOKEN is not set. Add it in GitHub repo settings as a secret, or switch to ADC (service account / OIDC)." >&2
+            exit 1
+          fi
+
+      - name: Deploy Hosting (test channel)
+        run: |
+          firebase hosting:channel:deploy "${CHANNEL}" \
+            --only "hosting:${TARGET}" \
+            --project "${PROJECT_ID}" \
+            --non-interactive \
+            --token "${FIREBASE_TOKEN}" \
+            --message "${GITHUB_SHA}"
