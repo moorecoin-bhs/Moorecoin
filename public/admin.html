@@ -735,6 +735,54 @@
           </div>
         </div>
 
+        <!-- Odds & Simulator -->
+        <div class="card" style="margin-top:16px">
+          <h3 style="margin-top:0">Odds & Simulator</h3>
+          <div class="stats-grid" id="odds-stats">
+            <div class="stat-box"><div class="label">Win Probability</div><div class="value" id="stat-pwin">--%</div></div>
+            <div class="stat-box"><div class="label">Loss Probability</div><div class="value" id="stat-ploss">--%</div></div>
+            <div class="stat-box"><div class="label">Zero Delta</div><div class="value" id="stat-pzero">--%</div></div>
+            <div class="stat-box"><div class="label">Expected Δ per Spin</div><div class="value" id="stat-ev">--</div></div>
+            <div class="stat-box"><div class="label">House Edge (vs entry)</div><div class="value" id="stat-house">--%</div></div>
+          </div>
+          <div class="form-row">
+            <label>Segment Probabilities</label>
+            <div class="prob-list" id="prob-list"></div>
+          </div>
+          <hr />
+          <h4 style="margin: 0 0 6px">Monte Carlo Simulation</h4>
+          <div class="sim-controls">
+            <div class="form-row">
+              <label for="sim-trials">Trials</label>
+              <input id="sim-trials" type="number" min="100" step="100" value="2000" />
+            </div>
+            <div class="form-row">
+              <label for="sim-steps">Spins per Trial</label>
+              <input id="sim-steps" type="number" min="1" step="1" value="50" />
+            </div>
+            <div class="form-row">
+              <label for="sim-bankroll">Starting Bankroll (coins)</label>
+              <input id="sim-bankroll" type="number" min="0" step="1" value="100" />
+            </div>
+            <div class="form-row">
+              <label for="sim-entry">Entry Cost Override (optional)</label>
+              <input id="sim-entry" type="number" min="0" step="1" placeholder="(use wheel entry)" />
+            </div>
+          </div>
+          <div class="sim-actions">
+            <button class="btn-primary" id="sim-run">Run Simulation</button>
+            <button class="btn-secondary" id="sim-stop" disabled>Stop</button>
+          </div>
+          <p class="sim-status" id="sim-status" aria-live="polite"></p>
+          <div class="stats-grid">
+            <div class="stat-box"><div class="label">Median Profit</div><div class="value" id="sim-med">--</div></div>
+            <div class="stat-box"><div class="label">Mean Profit</div><div class="value" id="sim-mean">--</div></div>
+            <div class="stat-box"><div class="label">Best 5%</div><div class="value" id="sim-p95">--</div></div>
+            <div class="stat-box"><div class="label">Worst 5%</div><div class="value" id="sim-p05">--</div></div>
+            <div class="stat-box"><div class="label">Bust Probability</div><div class="value" id="sim-bust">--%</div></div>
+          </div>
+        </div>
+
         <div class="card" style="margin-top: 16px">
           <h3 style="margin-top: 0">Participants</h3>
           <div class="users-actions" style="gap: 8px; flex-wrap: wrap">
@@ -1148,6 +1196,8 @@
           });
         }
         renderSegForm();
+        // Update odds view when config loads
+        setTimeout(renderOdds, 0);
       }
       function normalizeWeights() {
         if (!rouletteCfg?.segments?.length) return;
@@ -1163,6 +1213,159 @@
         renderSegForm();
         drawRoulette();
       }
+
+      // ---- Odds & Simulator ----
+      function computeOdds(cfg) {
+        const segs = (cfg?.segments || []).filter((s) => (s.weight || 0) > 0);
+        const totalW = segs.reduce((a, s) => a + (Number(s.weight) || 0), 0);
+        if (!segs.length || totalW <= 0) {
+          return {
+            pWin: 0,
+            pLoss: 0,
+            pZero: 0,
+            evDelta: 0,
+            probs: [],
+          };
+        }
+        const probs = segs.map((s) => ({
+          label: s.label || String(s.delta || 0),
+          delta: Number(s.delta || 0),
+          p: (Number(s.weight || 0) / totalW),
+          color: s.color || "#888",
+        }));
+        let pWin = 0,
+          pLoss = 0,
+          pZero = 0,
+          evDelta = 0;
+        for (const r of probs) {
+          if (r.delta > 0) pWin += r.p;
+          else if (r.delta < 0) pLoss += r.p;
+          else pZero += r.p;
+          evDelta += r.delta * r.p;
+        }
+        return { pWin, pLoss, pZero, evDelta, probs };
+      }
+      function renderOdds() {
+        applySegFormToModel();
+        const o = computeOdds(rouletteCfg);
+        const fmtPct = (x) => (x * 100).toFixed(1) + "%";
+        document.getElementById("stat-pwin").textContent = fmtPct(o.pWin);
+        document.getElementById("stat-ploss").textContent = fmtPct(o.pLoss);
+        document.getElementById("stat-pzero").textContent = fmtPct(o.pZero);
+        const ev = Number(o.evDelta || 0);
+        document.getElementById("stat-ev").textContent = (ev >= 0 ? "+" : "") + ev.toFixed(3);
+        const entry = Number(document.getElementById("roulette-entry").value || 0);
+        const houseEdge = entry > 0 ? (-entry + ev) / entry : 0; // relative expected loss vs entry
+        document.getElementById("stat-house").textContent = entry > 0 ? (houseEdge * 100).toFixed(1) + "%" : "--%";
+        // Prob list
+        const host = document.getElementById("prob-list");
+        host.innerHTML = "";
+        o.probs.forEach((r) => {
+          const row = document.createElement("div");
+          row.className = "prob-row";
+          const bar = document.createElement("div");
+          bar.className = "prob-bar";
+          const span = document.createElement("span");
+          span.style.width = Math.max(2, Math.round(r.p * 100)) + "%";
+          span.style.background = r.delta > 0 ? "linear-gradient(90deg,#37d28f,#2b9348)" : r.delta < 0 ? "linear-gradient(90deg,#ff7b7b,#d90429)" : "linear-gradient(90deg,#6da8ff,#4361ee)";
+          bar.append(span);
+          const label = document.createElement("div");
+          label.style.display = "flex";
+          label.style.alignItems = "center";
+          label.style.gap = "8px";
+          const sw = document.createElement("span");
+          sw.style.display = "inline-block";
+          sw.style.width = "10px";
+          sw.style.height = "10px";
+          sw.style.borderRadius = "3px";
+          sw.style.background = r.color;
+          const txt = document.createElement("span");
+          txt.textContent = `${"" + (r.label || r.delta)} (${(r.p * 100).toFixed(1)}%)`;
+          label.append(sw, txt);
+          row.append(label, bar);
+          host.append(row);
+        });
+      }
+      let simAbort = { flag: false };
+      async function runSimulation() {
+        applySegFormToModel();
+        renderOdds();
+        const trials = Math.max(1, parseInt(document.getElementById("sim-trials").value || "0", 10));
+        const steps = Math.max(1, parseInt(document.getElementById("sim-steps").value || "0", 10));
+        const bankroll0 = Math.max(0, parseInt(document.getElementById("sim-bankroll").value || "0", 10));
+        const entryOverrideRaw = document.getElementById("sim-entry").value;
+        const entry = entryOverrideRaw === "" ? Number(rouletteCfg.entryCost || 0) : Math.max(0, Number(entryOverrideRaw || 0));
+        const clamp = !!document.getElementById("roulette-clamp").checked;
+        const probs = computeOdds(rouletteCfg).probs;
+        if (!probs.length) return;
+        const weights = probs.map((r) => r.p);
+        const cum = [];
+        let s = 0;
+        for (const w of weights) {
+          s += w; cum.push(s);
+        }
+        // Fast picker from cumulative probabilities
+        function pick() {
+          const r = Math.random();
+          let i = 0;
+          while (i < cum.length && r > cum[i]) i++;
+          return probs[i] || probs[probs.length - 1];
+        }
+        const results = new Float64Array(trials);
+        let busts = 0;
+        const status = document.getElementById("sim-status");
+        const btnRun = document.getElementById("sim-run");
+        const btnStop = document.getElementById("sim-stop");
+        btnRun.disabled = true; btnStop.disabled = false;
+        simAbort.flag = false;
+        status.textContent = `Running ${trials.toLocaleString()} trials × ${steps} spins…`;
+        const batch = Math.max(50, Math.floor(trials / 40));
+        for (let t = 0; t < trials; t += batch) {
+          if (simAbort.flag) break;
+          const end = Math.min(trials, t + batch);
+          for (let i = t; i < end; i++) {
+            let bal = bankroll0;
+            for (let j = 0; j < steps; j++) {
+              if (entry > bal && clamp) { // cannot pay entry
+                // stop early if bankrupt
+                break;
+              }
+              bal -= entry;
+              const outcome = pick();
+              bal += outcome.delta;
+              if (clamp && bal < 0) bal = 0;
+            }
+            const profit = bal - bankroll0;
+            results[i] = profit;
+            if (bal === 0 && bankroll0 > 0) busts++;
+          }
+          if ((t / trials) < 1) {
+            status.textContent = `Progress ${(Math.min(100, Math.round((end / trials) * 100)))}%…`;
+            // Yield to UI
+            await new Promise((r) => setTimeout(r, 0));
+          }
+        }
+        btnRun.disabled = false; btnStop.disabled = true;
+        if (simAbort.flag) { status.textContent = "Simulation canceled."; return; }
+        // Summaries
+        const arr = Array.from(results);
+        arr.sort((a,b)=>a-b);
+        const n = arr.length;
+        const p = (q) => arr[Math.min(n-1, Math.max(0, Math.floor(q*(n-1))))];
+        const median = p(0.5);
+        const p95 = p(0.95);
+        const p05 = p(0.05);
+        const mean = arr.reduce((a,b)=>a+b,0) / Math.max(1,n);
+        const bustPct = (busts / Math.max(1, trials)) * 100;
+        document.getElementById("sim-med").textContent = (median>=0?"+":"") + median.toFixed(2);
+        document.getElementById("sim-mean").textContent = (mean>=0?"+":"") + mean.toFixed(2);
+        document.getElementById("sim-p95").textContent = (p95>=0?"+":"") + p95.toFixed(2);
+        document.getElementById("sim-p05").textContent = (p05>=0?"+":"") + p05.toFixed(2);
+        document.getElementById("sim-bust").textContent = bustPct.toFixed(1) + "%";
+        status.textContent = `Done: ${trials.toLocaleString()} trials. Mean ${(mean>=0?"+":"")+mean.toFixed(2)} coins.`;
+      }
+      function stopSimulation(){ simAbort.flag = true; }
+
       function pickWeightedIndex(weights) {
         const total = weights.reduce((a, b) => a + b, 0);
         let r = Math.random() * total;
@@ -1227,11 +1430,13 @@
             : structuredClone(R_DEFAULT);
           fillFormFromCfg();
           drawRoulette();
+          renderOdds();
         } catch (e) {
           console.warn("Failed to load roulette config", e);
           rouletteCfg = structuredClone(R_DEFAULT);
           fillFormFromCfg();
           drawRoulette();
+          renderOdds();
         }
       }
       async function saveRouletteConfig(currentUser) {
@@ -1498,16 +1703,25 @@
         });
         renderSegForm();
         drawRoulette();
+        renderOdds();
       });
       document
         .getElementById("segment-balance")
-        ?.addEventListener("click", normalizeWeights);
+        ?.addEventListener("click", () => { normalizeWeights(); renderOdds(); });
       document
         .getElementById("roulette-spin")
         ?.addEventListener("click", spinRoulette);
       document
         .getElementById("roulette-apply")
         ?.addEventListener("click", applyRouletteResult);
+
+      // Odds recompute on entry/clamp changes
+      document.getElementById("roulette-entry")?.addEventListener("input", renderOdds);
+      document.getElementById("roulette-clamp")?.addEventListener("change", renderOdds);
+
+      // Simulator controls
+      document.getElementById("sim-run")?.addEventListener("click", runSimulation);
+      document.getElementById("sim-stop")?.addEventListener("click", stopSimulation);
       document
         .getElementById("roulette-search")
         ?.addEventListener("input", filterRouletteUsers);
