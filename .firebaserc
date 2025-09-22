@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "mooreco-in"
+  },
+  "targets": {
+    "mooreco-in": {
+      "hosting": {
+        "test": [
+          "mooreco-in-test"
+        ]
+      }
+    }
   }
 }
