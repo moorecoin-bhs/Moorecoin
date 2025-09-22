@@ -36,4 +36,3 @@ jobs:
             --project "${PROJECT_ID}" \
             --non-interactive \
             --token "${FIREBASE_TOKEN}" \
-            --message "${GITHUB_SHA}"
