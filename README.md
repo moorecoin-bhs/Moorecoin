@@ -1,10 +1,11 @@
 # Moorecoin
-<<<<<<< HEAD
-=======
+
+# <<<<<<< HEAD
 
 25-09-22
->>>>>>> 19960971991655efd0514fc9deb690c3cd1663f3
-A classroom / community reward system. Users earn “Moorecoins”, view leaderboards, lock coins in time-based bonds for yield, and redeem (exchange) coins. Admins can award coins, manage users, clear pending redemptions, and monitor system health.
+
+> > > > > > > 19960971991655efd0514fc9deb690c3cd1663f3
+> > > > > > > A classroom / community reward system. Users earn “Moorecoins”, view leaderboards, lock coins in time-based bonds for yield, and redeem (exchange) coins. Admins can award coins, manage users, clear pending redemptions, and monitor system health.
 
 Licensed under the [GNU AGPL v3](LICENSE).
 
