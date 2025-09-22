@@ -5,9 +5,14 @@
   "targets": {
     "mooreco-in": {
       "hosting": {
-        "live": ["mooreco-in"],
-        "test": ["mooreco-in-test"]
+        "live": [
+          "mooreco-in"
+        ],
+        "test": [
+          "mooreco-in-test"
+        ]
       }
     }
-  }
+  },
+  "etags": {}
 }
