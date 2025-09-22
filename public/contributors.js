@@ -64,7 +64,8 @@
       console.error("Failed to load contributors:", err);
       listEl.innerHTML = "";
       const fallback = document.createElement("li");
-      fallback.textContent = "@halleyscommet";
+      fallback.textContent =
+        "GitHub API Failed or JS is disabled. Try again later.";
       const note = document.createElement("li");
       note.textContent = "(Could not load full list)";
       note.className = "muted";
