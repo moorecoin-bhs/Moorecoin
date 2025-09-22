@@ -1033,10 +1033,14 @@
         if (!rouletteEffectsEnabled) return;
         const layer = document.getElementById("roulette-confetti");
         if (!layer) return;
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const rect = layer.getBoundingClientRect();
-  const width = rect.width || 320;
-  const height = rect.height || 320;
+        if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        )
+          return;
+        const rect = layer.getBoundingClientRect();
+        const width = rect.width || 320;
+        const height = rect.height || 320;
         const colors = [
           "#ffbe0b",
           "#fb5607",
