@@ -736,14 +736,29 @@
         </div>
 
         <!-- Odds & Simulator -->
-        <div class="card" style="margin-top:16px">
-          <h3 style="margin-top:0">Odds & Simulator</h3>
+        <div class="card" style="margin-top: 16px">
+          <h3 style="margin-top: 0">Odds & Simulator</h3>
           <div class="stats-grid" id="odds-stats">
-            <div class="stat-box"><div class="label">Win Probability</div><div class="value" id="stat-pwin">--%</div></div>
-            <div class="stat-box"><div class="label">Loss Probability</div><div class="value" id="stat-ploss">--%</div></div>
-            <div class="stat-box"><div class="label">Zero Delta</div><div class="value" id="stat-pzero">--%</div></div>
-            <div class="stat-box"><div class="label">Expected Δ per Spin</div><div class="value" id="stat-ev">--</div></div>
-            <div class="stat-box"><div class="label">House Edge (vs entry)</div><div class="value" id="stat-house">--%</div></div>
+            <div class="stat-box">
+              <div class="label">Win Probability</div>
+              <div class="value" id="stat-pwin">--%</div>
+            </div>
+            <div class="stat-box">
+              <div class="label">Loss Probability</div>
+              <div class="value" id="stat-ploss">--%</div>
+            </div>
+            <div class="stat-box">
+              <div class="label">Zero Delta</div>
+              <div class="value" id="stat-pzero">--%</div>
+            </div>
+            <div class="stat-box">
+              <div class="label">Expected Δ per Spin</div>
+              <div class="value" id="stat-ev">--</div>
+            </div>
+            <div class="stat-box">
+              <div class="label">House Edge (vs entry)</div>
+              <div class="value" id="stat-house">--%</div>
+            </div>
           </div>
           <div class="form-row">
             <label>Segment Probabilities</label>
@@ -754,7 +769,13 @@
           <div class="sim-controls">
             <div class="form-row">
               <label for="sim-trials">Trials</label>
-              <input id="sim-trials" type="number" min="100" step="100" value="2000" />
+              <input
+                id="sim-trials"
+                type="number"
+                min="100"
+                step="100"
+                value="2000"
+              />
             </div>
             <div class="form-row">
               <label for="sim-steps">Spins per Trial</label>
@@ -762,11 +783,23 @@
             </div>
             <div class="form-row">
               <label for="sim-bankroll">Starting Bankroll (coins)</label>
-              <input id="sim-bankroll" type="number" min="0" step="1" value="100" />
+              <input
+                id="sim-bankroll"
+                type="number"
+                min="0"
+                step="1"
+                value="100"
+              />
             </div>
             <div class="form-row">
               <label for="sim-entry">Entry Cost Override (optional)</label>
-              <input id="sim-entry" type="number" min="0" step="1" placeholder="(use wheel entry)" />
+              <input
+                id="sim-entry"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="(use wheel entry)"
+              />
             </div>
           </div>
           <div class="sim-actions">
@@ -775,11 +808,26 @@
           </div>
           <p class="sim-status" id="sim-status" aria-live="polite"></p>
           <div class="stats-grid">
-            <div class="stat-box"><div class="label">Median Profit</div><div class="value" id="sim-med">--</div></div>
-            <div class="stat-box"><div class="label">Mean Profit</div><div class="value" id="sim-mean">--</div></div>
-            <div class="stat-box"><div class="label">Best 5%</div><div class="value" id="sim-p95">--</div></div>
-            <div class="stat-box"><div class="label">Worst 5%</div><div class="value" id="sim-p05">--</div></div>
-            <div class="stat-box"><div class="label">Bust Probability</div><div class="value" id="sim-bust">--%</div></div>
+            <div class="stat-box">
+              <div class="label">Median Profit</div>
+              <div class="value" id="sim-med">--</div>
+            </div>
+            <div class="stat-box">
+              <div class="label">Mean Profit</div>
+              <div class="value" id="sim-mean">--</div>
+            </div>
+            <div class="stat-box">
+              <div class="label">Best 5%</div>
+              <div class="value" id="sim-p95">--</div>
+            </div>
+            <div class="stat-box">
+              <div class="label">Worst 5%</div>
+              <div class="value" id="sim-p05">--</div>
+            </div>
+            <div class="stat-box">
+              <div class="label">Bust Probability</div>
+              <div class="value" id="sim-bust">--%</div>
+            </div>
           </div>
         </div>
 
@@ -1230,7 +1278,7 @@
         const probs = segs.map((s) => ({
           label: s.label || String(s.delta || 0),
           delta: Number(s.delta || 0),
-          p: (Number(s.weight || 0) / totalW),
+          p: Number(s.weight || 0) / totalW,
           color: s.color || "#888",
         }));
         let pWin = 0,
@@ -1253,10 +1301,14 @@
         document.getElementById("stat-ploss").textContent = fmtPct(o.pLoss);
         document.getElementById("stat-pzero").textContent = fmtPct(o.pZero);
         const ev = Number(o.evDelta || 0);
-        document.getElementById("stat-ev").textContent = (ev >= 0 ? "+" : "") + ev.toFixed(3);
-        const entry = Number(document.getElementById("roulette-entry").value || 0);
+        document.getElementById("stat-ev").textContent =
+          (ev >= 0 ? "+" : "") + ev.toFixed(3);
+        const entry = Number(
+          document.getElementById("roulette-entry").value || 0,
+        );
         const houseEdge = entry > 0 ? (-entry + ev) / entry : 0; // relative expected loss vs entry
-        document.getElementById("stat-house").textContent = entry > 0 ? (houseEdge * 100).toFixed(1) + "%" : "--%";
+        document.getElementById("stat-house").textContent =
+          entry > 0 ? (houseEdge * 100).toFixed(1) + "%" : "--%";
         // Prob list
         const host = document.getElementById("prob-list");
         host.innerHTML = "";
@@ -1267,7 +1319,12 @@
           bar.className = "prob-bar";
           const span = document.createElement("span");
           span.style.width = Math.max(2, Math.round(r.p * 100)) + "%";
-          span.style.background = r.delta > 0 ? "linear-gradient(90deg,#37d28f,#2b9348)" : r.delta < 0 ? "linear-gradient(90deg,#ff7b7b,#d90429)" : "linear-gradient(90deg,#6da8ff,#4361ee)";
+          span.style.background =
+            r.delta > 0
+              ? "linear-gradient(90deg,#37d28f,#2b9348)"
+              : r.delta < 0
+                ? "linear-gradient(90deg,#ff7b7b,#d90429)"
+                : "linear-gradient(90deg,#6da8ff,#4361ee)";
           bar.append(span);
           const label = document.createElement("div");
           label.style.display = "flex";
@@ -1290,11 +1347,23 @@
       async function runSimulation() {
         applySegFormToModel();
         renderOdds();
-        const trials = Math.max(1, parseInt(document.getElementById("sim-trials").value || "0", 10));
-        const steps = Math.max(1, parseInt(document.getElementById("sim-steps").value || "0", 10));
-        const bankroll0 = Math.max(0, parseInt(document.getElementById("sim-bankroll").value || "0", 10));
+        const trials = Math.max(
+          1,
+          parseInt(document.getElementById("sim-trials").value || "0", 10),
+        );
+        const steps = Math.max(
+          1,
+          parseInt(document.getElementById("sim-steps").value || "0", 10),
+        );
+        const bankroll0 = Math.max(
+          0,
+          parseInt(document.getElementById("sim-bankroll").value || "0", 10),
+        );
         const entryOverrideRaw = document.getElementById("sim-entry").value;
-        const entry = entryOverrideRaw === "" ? Number(rouletteCfg.entryCost || 0) : Math.max(0, Number(entryOverrideRaw || 0));
+        const entry =
+          entryOverrideRaw === ""
+            ? Number(rouletteCfg.entryCost || 0)
+            : Math.max(0, Number(entryOverrideRaw || 0));
         const clamp = !!document.getElementById("roulette-clamp").checked;
         const probs = computeOdds(rouletteCfg).probs;
         if (!probs.length) return;
@@ -1302,7 +1371,8 @@
         const cum = [];
         let s = 0;
         for (const w of weights) {
-          s += w; cum.push(s);
+          s += w;
+          cum.push(s);
         }
         // Fast picker from cumulative probabilities
         function pick() {
@@ -1316,7 +1386,8 @@
         const status = document.getElementById("sim-status");
         const btnRun = document.getElementById("sim-run");
         const btnStop = document.getElementById("sim-stop");
-        btnRun.disabled = true; btnStop.disabled = false;
+        btnRun.disabled = true;
+        btnStop.disabled = false;
         simAbort.flag = false;
         status.textContent = `Running ${trials.toLocaleString()} trials × ${steps} spins…`;
         const batch = Math.max(50, Math.floor(trials / 40));
@@ -1326,7 +1397,8 @@
           for (let i = t; i < end; i++) {
             let bal = bankroll0;
             for (let j = 0; j < steps; j++) {
-              if (entry > bal && clamp) { // cannot pay entry
+              if (entry > bal && clamp) {
+                // cannot pay entry
                 // stop early if bankrupt
                 break;
               }
@@ -1339,32 +1411,44 @@
             results[i] = profit;
             if (bal === 0 && bankroll0 > 0) busts++;
           }
-          if ((t / trials) < 1) {
-            status.textContent = `Progress ${(Math.min(100, Math.round((end / trials) * 100)))}%…`;
+          if (t / trials < 1) {
+            status.textContent = `Progress ${Math.min(100, Math.round((end / trials) * 100))}%…`;
             // Yield to UI
             await new Promise((r) => setTimeout(r, 0));
           }
         }
-        btnRun.disabled = false; btnStop.disabled = true;
-        if (simAbort.flag) { status.textContent = "Simulation canceled."; return; }
+        btnRun.disabled = false;
+        btnStop.disabled = true;
+        if (simAbort.flag) {
+          status.textContent = "Simulation canceled.";
+          return;
+        }
         // Summaries
         const arr = Array.from(results);
-        arr.sort((a,b)=>a-b);
+        arr.sort((a, b) => a - b);
         const n = arr.length;
-        const p = (q) => arr[Math.min(n-1, Math.max(0, Math.floor(q*(n-1))))];
+        const p = (q) =>
+          arr[Math.min(n - 1, Math.max(0, Math.floor(q * (n - 1))))];
         const median = p(0.5);
         const p95 = p(0.95);
         const p05 = p(0.05);
-        const mean = arr.reduce((a,b)=>a+b,0) / Math.max(1,n);
+        const mean = arr.reduce((a, b) => a + b, 0) / Math.max(1, n);
         const bustPct = (busts / Math.max(1, trials)) * 100;
-        document.getElementById("sim-med").textContent = (median>=0?"+":"") + median.toFixed(2);
-        document.getElementById("sim-mean").textContent = (mean>=0?"+":"") + mean.toFixed(2);
-        document.getElementById("sim-p95").textContent = (p95>=0?"+":"") + p95.toFixed(2);
-        document.getElementById("sim-p05").textContent = (p05>=0?"+":"") + p05.toFixed(2);
-        document.getElementById("sim-bust").textContent = bustPct.toFixed(1) + "%";
-        status.textContent = `Done: ${trials.toLocaleString()} trials. Mean ${(mean>=0?"+":"")+mean.toFixed(2)} coins.`;
+        document.getElementById("sim-med").textContent =
+          (median >= 0 ? "+" : "") + median.toFixed(2);
+        document.getElementById("sim-mean").textContent =
+          (mean >= 0 ? "+" : "") + mean.toFixed(2);
+        document.getElementById("sim-p95").textContent =
+          (p95 >= 0 ? "+" : "") + p95.toFixed(2);
+        document.getElementById("sim-p05").textContent =
+          (p05 >= 0 ? "+" : "") + p05.toFixed(2);
+        document.getElementById("sim-bust").textContent =
+          bustPct.toFixed(1) + "%";
+        status.textContent = `Done: ${trials.toLocaleString()} trials. Mean ${(mean >= 0 ? "+" : "") + mean.toFixed(2)} coins.`;
       }
-      function stopSimulation(){ simAbort.flag = true; }
+      function stopSimulation() {
+        simAbort.flag = true;
+      }
 
       function pickWeightedIndex(weights) {
         const total = weights.reduce((a, b) => a + b, 0);
@@ -1707,7 +1791,10 @@
       });
       document
         .getElementById("segment-balance")
-        ?.addEventListener("click", () => { normalizeWeights(); renderOdds(); });
+        ?.addEventListener("click", () => {
+          normalizeWeights();
+          renderOdds();
+        });
       document
         .getElementById("roulette-spin")
         ?.addEventListener("click", spinRoulette);
@@ -1716,12 +1803,20 @@
         ?.addEventListener("click", applyRouletteResult);
 
       // Odds recompute on entry/clamp changes
-      document.getElementById("roulette-entry")?.addEventListener("input", renderOdds);
-      document.getElementById("roulette-clamp")?.addEventListener("change", renderOdds);
+      document
+        .getElementById("roulette-entry")
+        ?.addEventListener("input", renderOdds);
+      document
+        .getElementById("roulette-clamp")
+        ?.addEventListener("change", renderOdds);
 
       // Simulator controls
-      document.getElementById("sim-run")?.addEventListener("click", runSimulation);
-      document.getElementById("sim-stop")?.addEventListener("click", stopSimulation);
+      document
+        .getElementById("sim-run")
+        ?.addEventListener("click", runSimulation);
+      document
+        .getElementById("sim-stop")
+        ?.addEventListener("click", stopSimulation);
       document
         .getElementById("roulette-search")
         ?.addEventListener("input", filterRouletteUsers);
