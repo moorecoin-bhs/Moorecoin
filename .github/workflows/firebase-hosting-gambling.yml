@@ -15,6 +15,7 @@ jobs:
       PROJECT_ID: mooreco-in
       CHANNEL: gambling
       TARGET: test
+      SITE_ID: mooreco-in-test
       FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
@@ -32,7 +33,7 @@ jobs:
       - name: Deploy Hosting (test channel)
         run: |
           firebase hosting:channel:deploy "${CHANNEL}" \
-            --only "hosting:${TARGET}" \
+            --site "${SITE_ID}" \
             --project "${PROJECT_ID}" \
             --non-interactive \
             --token "${FIREBASE_TOKEN}" \
