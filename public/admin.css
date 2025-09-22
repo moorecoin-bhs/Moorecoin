@@ -141,6 +141,65 @@ button.btn-secondary {
   margin-top: 4px;
 }
 
+/* --- Roulette celebration effects --- */
+.roulette-stage {
+  position: relative;
+}
+.confetti-layer {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.confetti-piece {
+  position: absolute;
+  top: -6%;
+  transform: translateX(0) rotate(0deg);
+  border-radius: 2px;
+  opacity: 0.95;
+  animation-name: confetti-fall, confetti-rot;
+  animation-timing-function: cubic-bezier(.2,.7,.2,1), linear;
+  animation-iteration-count: 1, 1;
+}
+@keyframes confetti-fall {
+  0% { transform: translateX(0) translateY(0) rotate(0deg); }
+  100% { transform: translateX(var(--tx, 0)) translateY(105%) rotate(var(--rz, 0deg)); }
+}
+@keyframes confetti-rot {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(30deg); }
+}
+.shake {
+  animation: stage-shake 0.45s ease;
+}
+@keyframes stage-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+.canvas-glow {
+  box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.35), 0 0 18px rgba(255, 209, 102, 0.35);
+  border-color: #ffd166 !important;
+}
+.result-badge.pop {
+  animation: badge-pop 260ms ease;
+}
+@keyframes badge-pop {
+  0% { transform: scale(.8); opacity: .2; }
+  70% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.result-badge.win {
+  background: #163b2b;
+  color: #4ce39b;
+}
+.result-badge.loss {
+  background: #4a1f1f;
+  color: #ff9b9b;
+}
+
 /* Users table */
 .users-header {
   display: flex;

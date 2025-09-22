@@ -631,7 +631,7 @@
             align-items: stretch;
           "
         >
-          <div style="display: flex; flex-direction: column; gap: 10px">
+          <div class="roulette-stage" style="display: flex; flex-direction: column; gap: 10px; position: relative">
             <canvas
               id="roulette-canvas"
               width="320"
@@ -644,6 +644,7 @@
                 height: auto;
               "
             ></canvas>
+            <div id="roulette-confetti" class="confetti-layer" aria-hidden="true"></div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap">
               <button class="btn-primary" id="roulette-spin">Spin</button>
               <button class="btn-secondary" id="roulette-apply">
@@ -651,7 +652,7 @@
               </button>
               <span
                 id="roulette-result"
-                class="value-chip"
+                class="value-chip result-badge"
                 style="display: none"
               ></span>
             </div>
@@ -683,6 +684,21 @@
                 >
                   <input id="roulette-clamp" type="checkbox" checked /> Prevent
                   negative balances
+                </label>
+              </div>
+              <div
+                class="form-row"
+                style="display: flex; align-items: center; gap: 8px"
+              >
+                <label
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin: 0;
+                  "
+                >
+                  <input id="roulette-effects" type="checkbox" checked /> Celebration effects (sound & confetti)
                 </label>
               </div>
             </div>
@@ -939,6 +955,102 @@
       };
       let rouletteCfg = structuredClone(R_DEFAULT);
       let rouletteSpinResult = null; // {index, segment}
+      let rouletteEffectsEnabled = true;
+
+      // --- Lightweight audio helpers (WebAudio; no external assets) ---
+      let audioCtx = null;
+      function ensureAudio() {
+        if (!rouletteEffectsEnabled) return null;
+        try {
+          if (!audioCtx)
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === "suspended") audioCtx.resume();
+          return audioCtx;
+        } catch (_) {
+          return null;
+        }
+      }
+      function beep({ freq = 800, time = 0.04, type = "square", volume = 0.07 }) {
+        const ctx = ensureAudio();
+        if (!ctx) return;
+        const t0 = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(volume, t0);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + time);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start();
+        osc.stop(t0 + time + 0.02);
+      }
+      function playTick(intensity = 1) {
+        const f = 650 + 250 * intensity;
+        const vol = 0.03 + 0.04 * intensity;
+        beep({ freq: f, time: 0.03, type: "square", volume: vol });
+      }
+      function playWin() {
+        const ctx = ensureAudio();
+        if (!ctx) return;
+        [880, 1175, 1568].forEach((f, i) =>
+          setTimeout(
+            () => beep({ freq: f, time: 0.08, type: "sine", volume: 0.08 }),
+            i * 90,
+          ),
+        );
+      }
+      function playLose() {
+        const ctx = ensureAudio();
+        if (!ctx) return;
+        [440, 330].forEach((f, i) =>
+          setTimeout(
+            () =>
+              beep({ freq: f, time: 0.1, type: "triangle", volume: 0.06 }),
+            i * 120,
+          ),
+        );
+      }
+
+      // --- Confetti & stage effects ---
+      function fireConfetti({ count = 80 } = {}) {
+        if (!rouletteEffectsEnabled) return;
+        const layer = document.getElementById("roulette-confetti");
+        if (!layer) return;
+        const colors = [
+          "#ffbe0b",
+          "#fb5607",
+          "#ff006e",
+          "#8338ec",
+          "#3a86ff",
+          "#2b9348",
+        ];
+        for (let i = 0; i < count; i++) {
+          const s = document.createElement("div");
+          s.className = "confetti-piece";
+          const size = 6 + Math.random() * 6;
+          s.style.width = `${size}px`;
+          s.style.height = `${size * (0.5 + Math.random())}px`;
+          s.style.left = `${10 + Math.random() * 80}%`;
+          s.style.background = colors[i % colors.length];
+          s.style.setProperty("--tx", `${-40 + Math.random() * 80}%`);
+          s.style.setProperty("--rz", `${Math.random() * 720 - 360}deg`);
+          s.style.animationDuration = `${0.9 + Math.random() * 0.9}s`;
+          layer.appendChild(s);
+          setTimeout(() => s.remove(), 1800);
+        }
+      }
+      function shakeStage() {
+        const stage = document.querySelector(".roulette-stage");
+        if (!stage) return;
+        stage.classList.add("shake");
+        setTimeout(() => stage.classList.remove("shake"), 500);
+      }
+      function flashCanvasWin() {
+        const c = document.getElementById("roulette-canvas");
+        if (!c) return;
+        c.classList.add("canvas-glow");
+        setTimeout(() => c.classList.remove("canvas-glow"), 600);
+      }
 
       function segRow(seg, idx) {
         const row = document.createElement("div");
@@ -998,6 +1110,13 @@
         document.getElementById("roulette-clamp").checked = !!(
           rouletteCfg.clampNoNegative ?? true
         );
+        const effectsEl = document.getElementById("roulette-effects");
+        if (effectsEl) {
+          effectsEl.checked = rouletteEffectsEnabled;
+          effectsEl.addEventListener("change", () => {
+            rouletteEffectsEnabled = !!effectsEl.checked;
+          }, { once: true });
+        }
         renderSegForm();
       }
       function normalizeWeights() {
@@ -1114,6 +1233,15 @@
         applySegFormToModel();
         const segs = rouletteCfg.segments || [];
         if (!segs.length) return;
+        const spinBtn = document.getElementById("roulette-spin");
+        const applyBtn = document.getElementById("roulette-apply");
+        spinBtn?.setAttribute("disabled", "true");
+        applyBtn?.setAttribute("disabled", "true");
+        const badge = document.getElementById("roulette-result");
+        if (badge) {
+          badge.style.display = "none";
+          badge.classList.remove("win", "loss", "pop");
+        }
         const idx = pickWeightedIndex(
           segs.map((s) => Math.max(1, Number(s.weight || 1))),
         );
@@ -1132,6 +1260,7 @@
         const duration = 2400 + Math.random() * 900; // 2.4-3.3s
         const extraTurns = 4 + Math.floor(Math.random() * 3); // 4-6 extra spins
         let startTs = null;
+        let nextTickAt = 0;
         function easeOutCubic(t) {
           return 1 - Math.pow(1 - t, 3);
         }
@@ -1141,14 +1270,32 @@
           const eased = easeOutCubic(t);
           const angle = eased * (extraTurns * Math.PI * 2 + targetAngle);
           drawRoulette(angle);
+          if (ts >= nextTickAt) {
+            const interval = 55 + 420 * t; // 55ms -> ~475ms
+            playTick(1 - t);
+            nextTickAt = ts + interval;
+          }
           if (t < 1) requestAnimationFrame(step);
           else {
             rouletteSpinResult = { index: idx, segment: targetSeg };
-            const badge = document.getElementById("roulette-result");
+            const isWin = Number(targetSeg.delta || 0) >= 0;
             if (badge) {
               badge.style.display = "inline-flex";
               badge.textContent = `Result: ${targetSeg.label || targetSeg.delta}`;
+              badge.classList.add(isWin ? "win" : "loss", "pop");
             }
+            if (rouletteEffectsEnabled) {
+              if (isWin) {
+                playWin();
+                fireConfetti({ count: 90 });
+                flashCanvasWin();
+              } else {
+                playLose();
+                shakeStage();
+              }
+            }
+            spinBtn?.removeAttribute("disabled");
+            applyBtn?.removeAttribute("disabled");
           }
         }
         requestAnimationFrame(step);
