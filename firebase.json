@@ -5,13 +5,26 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "hosting": {
-    "public": "public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "cleanUrls": true,
-    "rewrites": [
-      { "source": "/@:handle", "destination": "/@.html" },
-      { "source": "/@me", "destination": "/@.html" }
-    ]
-  }
+  "hosting": [
+    {
+      "target": "live",
+      "public": "public",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "cleanUrls": true,
+      "rewrites": [
+        { "source": "/@:handle", "destination": "/@.html" },
+        { "source": "/@me", "destination": "/@.html" }
+      ]
+    },
+    {
+      "target": "test",
+      "public": "public",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "cleanUrls": true,
+      "rewrites": [
+        { "source": "/@:handle", "destination": "/@.html" },
+        { "source": "/@me", "destination": "/@.html" }
+      ]
+    }
+  ]
 }
