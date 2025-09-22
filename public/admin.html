@@ -631,7 +631,15 @@
             align-items: stretch;
           "
         >
-          <div class="roulette-stage" style="display: flex; flex-direction: column; gap: 10px; position: relative">
+          <div
+            class="roulette-stage"
+            style="
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+              position: relative;
+            "
+          >
             <canvas
               id="roulette-canvas"
               width="320"
@@ -644,7 +652,11 @@
                 height: auto;
               "
             ></canvas>
-            <div id="roulette-confetti" class="confetti-layer" aria-hidden="true"></div>
+            <div
+              id="roulette-confetti"
+              class="confetti-layer"
+              aria-hidden="true"
+            ></div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap">
               <button class="btn-primary" id="roulette-spin">Spin</button>
               <button class="btn-secondary" id="roulette-apply">
@@ -698,7 +710,8 @@
                     margin: 0;
                   "
                 >
-                  <input id="roulette-effects" type="checkbox" checked /> Celebration effects (sound & confetti)
+                  <input id="roulette-effects" type="checkbox" checked />
+                  Celebration effects (sound & confetti)
                 </label>
               </div>
             </div>
@@ -970,7 +983,12 @@
           return null;
         }
       }
-      function beep({ freq = 800, time = 0.04, type = "square", volume = 0.07 }) {
+      function beep({
+        freq = 800,
+        time = 0.04,
+        type = "square",
+        volume = 0.07,
+      }) {
         const ctx = ensureAudio();
         if (!ctx) return;
         const t0 = ctx.currentTime;
@@ -1004,8 +1022,7 @@
         if (!ctx) return;
         [440, 330].forEach((f, i) =>
           setTimeout(
-            () =>
-              beep({ freq: f, time: 0.1, type: "triangle", volume: 0.06 }),
+            () => beep({ freq: f, time: 0.1, type: "triangle", volume: 0.06 }),
             i * 120,
           ),
         );
@@ -1113,9 +1130,13 @@
         const effectsEl = document.getElementById("roulette-effects");
         if (effectsEl) {
           effectsEl.checked = rouletteEffectsEnabled;
-          effectsEl.addEventListener("change", () => {
-            rouletteEffectsEnabled = !!effectsEl.checked;
-          }, { once: true });
+          effectsEl.addEventListener(
+            "change",
+            () => {
+              rouletteEffectsEnabled = !!effectsEl.checked;
+            },
+            { once: true },
+          );
         }
         renderSegForm();
       }
