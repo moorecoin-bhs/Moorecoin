@@ -1,8 +1,8 @@
-name: Deploy to Firebase Hosting (live on main)
+name: Deploy to Firebase Hosting (gambling)
 
 on:
   push:
-    branches: [main]
+    branches: [gambling]
     paths:
       - "public/**"
       - "firebase.json"
@@ -17,5 +17,5 @@ jobs:
       - name: Install Firebase CLI
         run: npm i -g firebase-tools
 
-      - name: Deploy Hosting
-        run: firebase deploy --only hosting --project mooreco-in --non-interactive --token "${{ secrets.FIREBASE_TOKEN }}"
+      - name: Deploy Hosting (Test)
+        run: firebase deploy --only hosting:test --project mooreco-in --non-interactive --token "${{ secrets.FIREBASE_TOKEN }}"
