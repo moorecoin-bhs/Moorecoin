@@ -306,6 +306,14 @@
           >
             Pending
           </button>
+          <button
+            role="tab"
+            aria-selected="false"
+            id="tab-roulette"
+            data-target="panel-roulette"
+          >
+            Roulette
+          </button>
         </div>
       </header>
       <section
@@ -586,6 +594,95 @@
         </div>
         <p class="inline-info" id="pending-status" aria-live="polite"></p>
       </section>
+
+      <!-- Roulette Panel -->
+      <section
+        id="panel-roulette"
+        class="panel"
+        role="tabpanel"
+        aria-labelledby="tab-roulette"
+        hidden
+      >
+        <div class="users-header" style="align-items:flex-start; gap:14px; flex-wrap:wrap;">
+          <h2 style="margin-top:6px">Roulette</h2>
+          <div class="users-actions" style="flex-wrap:wrap; gap:10px;">
+            <button class="btn-secondary" id="roulette-load">Reload Config</button>
+            <button class="btn-primary" id="roulette-save">Save Config</button>
+            <button class="btn-secondary" id="roulette-reset" title="Reset to simple defaults">Reset</button>
+          </div>
+        </div>
+        <div class="card" style="display:grid; grid-template-columns: 320px 1fr; gap:16px; align-items:stretch;">
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <canvas id="roulette-canvas" width="320" height="320" style="background:#121418; border:1px solid #2e3238; border-radius:12px; width:100%; height:auto;"></canvas>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn-primary" id="roulette-spin">Spin</button>
+              <button class="btn-secondary" id="roulette-apply">Apply Result</button>
+              <span id="roulette-result" class="value-chip" style="display:none"></span>
+            </div>
+          </div>
+          <div>
+            <h3 style="margin-top:0">Wheel Configuration</h3>
+            <div class="two-col" style="grid-template-columns: 1fr 1fr;">
+              <div class="form-row">
+                <label for="roulette-entry">Entry Cost (coins)</label>
+                <input id="roulette-entry" type="number" min="0" step="1" value="1" />
+              </div>
+              <div class="form-row" style="display:flex; align-items:center; gap:8px;">
+                <label style="display:flex; align-items:center; gap:8px; margin:0;">
+                  <input id="roulette-clamp" type="checkbox" checked /> Prevent negative balances
+                </label>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>Segments</label>
+              <div id="roulette-segments"></div>
+              <div style="display:flex; gap:8px; margin-top:8px;">
+                <button class="btn-secondary" id="segment-add">Add Segment</button>
+                <button class="btn-secondary" id="segment-balance">Normalize Weights</button>
+              </div>
+              <div class="inline-info">Each segment has a label (display), delta (coins added or removed), color, and weight (relative odds). Example: label "+5", delta 5, weight 3.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <h3 style="margin-top:0">Participants</h3>
+          <div class="users-actions" style="gap:8px; flex-wrap:wrap;">
+            <input type="search" id="roulette-search" placeholder="Search name/email" aria-label="Search participants" />
+            <select id="roulette-hour" aria-label="Filter by hour">
+              <option value="">All Hours</option>
+              <option value="1">Hour 1</option>
+              <option value="2">Hour 2</option>
+              <option value="3">Hour 3</option>
+              <option value="4">Hour 4</option>
+              <option value="5">Hour 5</option>
+              <option value="6">Hour 6</option>
+              <option value="none">No hour</option>
+            </select>
+            <button class="btn-secondary" id="roulette-reload">Reload Users</button>
+            <button class="btn-secondary" id="select-all">Select All</button>
+            <button class="btn-secondary" id="select-none">Select None</button>
+          </div>
+          <div class="table-wrap" tabindex="0" style="max-height: 320px; overflow:auto;">
+            <table id="roulette-users" aria-describedby="roulette-users-caption">
+              <caption id="roulette-users-caption">Select students to include in the spin result application.</caption>
+              <thead>
+                <tr>
+                  <th style="width:34px;"></th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Coins</th>
+                  <th>Hour</th>
+                </tr>
+              </thead>
+              <tbody id="roulette-users-tbody">
+                <tr><td colspan="5" style="text-align:center; opacity:.7;">Load users…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="inline-info" id="roulette-users-status"></p>
+        </div>
+      </section>
     </main>
 
     <footer>
@@ -718,6 +815,11 @@
               panel.removeAttribute("hidden");
               if (panelId === "panel-pending") {
                 loadPending();
+              } else if (panelId === "panel-roulette") {
+                // Lazy-load config and participants when opening Roulette
+                loadRouletteConfig();
+                loadRouletteUsers();
+                drawRoulette();
               }
             } else {
               panel.classList.remove("active");
@@ -738,6 +840,371 @@
           }
         }
       });
+
+      // -----------------
+      // Roulette helpers
+      // -----------------
+      const R_DEFAULT = {
+        entryCost: 1,
+        clampNoNegative: true,
+        segments: [
+          { label: "+5", delta: 5, color: "#2b9348", weight: 2 },
+          { label: "+2", delta: 2, color: "#55a630", weight: 3 },
+          { label: "-2", delta: -2, color: "#d90429", weight: 3 },
+          { label: "0", delta: 0, color: "#6c757d", weight: 2 },
+        ],
+        updatedAt: null,
+        updatedBy: null,
+      };
+      let rouletteCfg = structuredClone(R_DEFAULT);
+      let rouletteSpinResult = null; // {index, segment}
+
+      function segRow(seg, idx) {
+        const row = document.createElement("div");
+        row.style.display = "grid";
+        row.style.gridTemplateColumns = "1.4fr .9fr .9fr .9fr 34px";
+        row.style.gap = "8px";
+        row.style.alignItems = "center";
+        row.style.marginBottom = "8px";
+        row.innerHTML = `
+          <input type="text" data-k="label" placeholder="Label" value="${seg.label || ""}">
+          <input type="number" data-k="delta" step="1" placeholder="0" value="${Number(seg.delta || 0)}">
+          <input type="color" data-k="color" value="${seg.color || "#888888"}">
+          <input type="number" data-k="weight" min="1" step="1" placeholder="1" value="${Number(seg.weight || 1)}">
+          <button class="btn-secondary btn-xs" title="Remove">✕</button>`;
+        row.querySelector("button").addEventListener("click", () => {
+          row.remove();
+          applySegFormToModel();
+          drawRoulette();
+        });
+        row.querySelectorAll("input").forEach((inp) => {
+          inp.addEventListener("input", () => {
+            applySegFormToModel();
+            drawRoulette();
+          });
+        });
+        return row;
+      }
+      function renderSegForm() {
+        const host = document.getElementById("roulette-segments");
+        if (!host) return;
+        host.innerHTML = "";
+        rouletteCfg.segments.forEach((s, i) => host.append(segRow(s, i)));
+      }
+      function applySegFormToModel() {
+        const host = document.getElementById("roulette-segments");
+        if (!host) return;
+        const rows = [...host.children];
+        rouletteCfg.segments = rows.map((r) => {
+          const get = (sel) => r.querySelector(`[data-k="${sel}"]`);
+          return {
+            label: get("label").value.trim() || "",
+            delta: Number(get("delta").value || 0),
+            color: get("color").value || "#888888",
+            weight: Math.max(1, Number(get("weight").value || 1)),
+          };
+        });
+        rouletteCfg.entryCost = Number(
+          document.getElementById("roulette-entry")?.value || 0,
+        );
+        rouletteCfg.clampNoNegative = !!document.getElementById(
+          "roulette-clamp",
+        )?.checked;
+      }
+      function fillFormFromCfg() {
+        document.getElementById("roulette-entry").value = String(
+          rouletteCfg.entryCost ?? 0,
+        );
+        document.getElementById("roulette-clamp").checked = !!(
+          rouletteCfg.clampNoNegative ?? true
+        );
+        renderSegForm();
+      }
+      function normalizeWeights() {
+        if (!rouletteCfg?.segments?.length) return;
+        const avg =
+          rouletteCfg.segments.reduce((a, b) => a + (Number(b.weight) || 1), 0) /
+          rouletteCfg.segments.length;
+        rouletteCfg.segments = rouletteCfg.segments.map((s) => ({
+          ...s,
+          weight: Math.max(1, Math.round(s.weight / avg)) || 1,
+        }));
+        renderSegForm();
+        drawRoulette();
+      }
+      function pickWeightedIndex(weights) {
+        const total = weights.reduce((a, b) => a + b, 0);
+        let r = Math.random() * total;
+        for (let i = 0; i < weights.length; i++) {
+          r -= weights[i];
+          if (r <= 0) return i;
+        }
+        return weights.length - 1;
+      }
+      function drawRoulette(spinAngle = 0) {
+        const canvas = document.getElementById("roulette-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const { width, height } = canvas;
+        ctx.clearRect(0, 0, width, height);
+        const cx = width / 2;
+        const cy = height / 2;
+        const radius = Math.min(cx, cy) - 6;
+        const segs = rouletteCfg.segments?.length ? rouletteCfg.segments : [];
+        const totalWeight = segs.reduce((a, s) => a + (s.weight || 1), 0);
+        let start = -Math.PI / 2 + spinAngle; // top
+        segs.forEach((s) => {
+          const frac = (s.weight || 1) / totalWeight;
+          const sweep = frac * Math.PI * 2;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.arc(cx, cy, radius, start, start + sweep);
+          ctx.closePath();
+          ctx.fillStyle = s.color || "#888";
+          ctx.fill();
+          // text
+          const mid = start + sweep / 2;
+          ctx.save();
+          ctx.translate(cx + Math.cos(mid) * (radius * 0.6), cy + Math.sin(mid) * (radius * 0.6));
+          ctx.rotate(mid + Math.PI / 2);
+          ctx.fillStyle = "#fff";
+          ctx.font = "bold 16px system-ui, -apple-system, Segoe UI, Roboto";
+          ctx.textAlign = "center";
+          ctx.fillText(s.label || String(s.delta), 0, 6);
+          ctx.restore();
+          start += sweep;
+        });
+        // pointer
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - radius - 2);
+        ctx.lineTo(cx - 10, cy - radius - 20);
+        ctx.lineTo(cx + 10, cy - radius - 20);
+        ctx.closePath();
+        ctx.fillStyle = "#ffd166";
+        ctx.fill();
+      }
+      async function loadRouletteConfig() {
+        try {
+          const db = getFirestore(app);
+          const ref = doc(db, "config", "roulette");
+          const snap = await getDoc(ref);
+          rouletteCfg = snap.exists() ? { ...R_DEFAULT, ...snap.data() } : structuredClone(R_DEFAULT);
+          fillFormFromCfg();
+          drawRoulette();
+        } catch (e) {
+          console.warn("Failed to load roulette config", e);
+          rouletteCfg = structuredClone(R_DEFAULT);
+          fillFormFromCfg();
+          drawRoulette();
+        }
+      }
+      async function saveRouletteConfig(currentUser) {
+        applySegFormToModel();
+        // Minimal validation
+        if (!rouletteCfg.segments?.length) {
+          alert("Add at least one segment");
+          return;
+        }
+        try {
+          const db = getFirestore(app);
+          const ref = doc(db, "config", "roulette");
+          const payload = {
+            ...rouletteCfg,
+            updatedAt: serverTimestamp(),
+            updatedBy: {
+              uid: currentUser?.uid || null,
+              name: currentUser?.displayName || null,
+              email: currentUser?.email || null,
+            },
+          };
+          await setDoc(ref, payload, { merge: true });
+          alert("Saved roulette config");
+        } catch (e) {
+          alert("Save failed: " + e.message);
+        }
+      }
+      function spinRoulette() {
+        applySegFormToModel();
+        const segs = rouletteCfg.segments || [];
+        if (!segs.length) return;
+        const idx = pickWeightedIndex(segs.map((s) => Math.max(1, Number(s.weight || 1))));
+        const targetSeg = segs[idx];
+        // Determine angle range of target segment (based on current draw function math)
+        const totalWeight = segs.reduce((a, s) => a + (s.weight || 1), 0);
+        let start = -Math.PI / 2; // starting reference for drawRoulette when spinAngle=0
+        let accum = 0;
+        for (let i = 0; i < idx; i++) accum += (segs[i].weight || 1);
+        const fracStart = accum / totalWeight;
+        const fracMid = fracStart + (segs[idx].weight || 1) / totalWeight / 2;
+        const midAngle = start + fracMid * Math.PI * 2;
+        // We want pointer at top => rotate wheel so that midAngle aligns to top (-PI/2)
+        const targetAngle = -Math.PI / 2 - midAngle; // delta angle to apply
+        const canvas = document.getElementById("roulette-canvas");
+        const duration = 2400 + Math.random() * 900; // 2.4-3.3s
+        const extraTurns = 4 + Math.floor(Math.random() * 3); // 4-6 extra spins
+        let startTs = null;
+        function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+        function step(ts) {
+          if (!startTs) startTs = ts;
+          const t = Math.min(1, (ts - startTs) / duration);
+          const eased = easeOutCubic(t);
+          const angle = (eased * (extraTurns * Math.PI * 2 + targetAngle));
+          drawRoulette(angle);
+          if (t < 1) requestAnimationFrame(step);
+          else {
+            rouletteSpinResult = { index: idx, segment: targetSeg };
+            const badge = document.getElementById("roulette-result");
+            if (badge) {
+              badge.style.display = "inline-flex";
+              badge.textContent = `Result: ${targetSeg.label || targetSeg.delta}`;
+            }
+          }
+        }
+        requestAnimationFrame(step);
+      }
+
+      // Participants list
+      async function loadRouletteUsers() {
+        const tbody = document.getElementById("roulette-users-tbody");
+        const status = document.getElementById("roulette-users-status");
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; opacity:.7;">Loading…</td></tr>';
+        status.textContent = "Fetching users…";
+        try {
+          if (!currentIdToken) throw new Error("Not authed");
+          const params = new URLSearchParams({ limit: "200", order: "coins", dir: "desc" });
+          const res = await fetch(`${apiBase}/admin/users?${params.toString()}`, {
+            headers: { Authorization: `Bearer ${currentIdToken}` },
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || "Request failed");
+          const users = json.users || [];
+          tbody.innerHTML = users
+            .map((u) => {
+              const name = u.displayName || "(no name)";
+              const email = u.email || "";
+              const coinsNum = Number(u.coins || 0);
+              const coins = coinsNum.toLocaleString();
+              const hour = u.hour ?? (u.profile?.hour);
+              return `<tr data-uid="${u.uid}" data-name="${(name || '').toLowerCase()}" data-email="${(email || '').toLowerCase()}" data-hour="${hour ?? ''}" data-coins="${coinsNum}">
+                        <td><input type="checkbox" class="ru-check"></td>
+                        <td>${name}</td>
+                        <td>${email}</td>
+                        <td class="num">${coins}</td>
+                        <td class="num">${hour ?? ''}</td>
+                      </tr>`;
+            })
+            .join("");
+          status.textContent = `Loaded ${users.length} users`;
+        } catch (e) {
+          console.error(e);
+          status.textContent = "Failed: " + e.message;
+        }
+      }
+      function filterRouletteUsers() {
+        const q = document.getElementById("roulette-search").value.toLowerCase();
+        const hour = document.getElementById("roulette-hour").value;
+        const rows = document.querySelectorAll("#roulette-users-tbody tr");
+        rows.forEach((r) => {
+          const nm = r.dataset.name || "";
+          const em = r.dataset.email || "";
+          const hr = String(r.dataset.hour || "");
+          let ok = (nm.includes(q) || em.includes(q));
+          if (hour) {
+            if (hour === "none") ok = ok && (hr === "" || hr === "undefined");
+            else ok = ok && hr === hour;
+          }
+          r.style.display = ok ? "" : "none";
+        });
+      }
+      function getSelectedUserIds() {
+        const rows = document.querySelectorAll("#roulette-users-tbody tr");
+        const ids = [];
+        rows.forEach((r) => {
+          const cb = r.querySelector(".ru-check");
+          if (cb && cb.checked && r.style.display !== "none") ids.push(r.dataset.uid);
+        });
+        return ids;
+      }
+      function selectAllRouletteUsers(val) {
+        document.querySelectorAll("#roulette-users-tbody .ru-check").forEach((cb) => (cb.checked = val));
+      }
+
+      async function applyRouletteResult() {
+        if (!rouletteSpinResult) {
+          alert("Spin first to get a result.");
+          return;
+        }
+        const ids = getSelectedUserIds();
+        if (!ids.length) {
+          alert("Select at least one participant.");
+          return;
+        }
+        // Confirm summary
+        const seg = rouletteSpinResult.segment;
+        const entry = Number(document.getElementById("roulette-entry").value || 0);
+        const clamp = !!document.getElementById("roulette-clamp").checked;
+        if (!confirm(`Apply result \"${seg.label || seg.delta}\" (delta ${seg.delta >= 0 ? "+" : ""}${seg.delta} coins) to ${ids.length} students? Entry cost ${entry}.`)) return;
+        // Apply per-user using existing admin API
+        const statusEl = document.getElementById("roulette-users-status");
+        let ok = 0, fail = 0;
+        for (const uid of ids) {
+          try {
+            // Get current coins from the table dataset
+            const row = document.querySelector(`#roulette-users-tbody tr[data-uid="${uid}"]`);
+            let coins = Number(row?.dataset.coins || 0);
+            let next = coins - entry + Number(seg.delta || 0);
+            if (clamp && next < 0) next = 0;
+            const patch = await fetch(`${apiBase}/admin/users/${uid}`, {
+              method: "PATCH",
+              headers: {
+                Authorization: `Bearer ${currentIdToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ coins: Math.floor(next) }),
+            });
+            const pj = await patch.json();
+            if (!patch.ok) throw new Error(pj.error || "Patch failed");
+            ok++;
+            statusEl.textContent = `Updated ${ok}/${ids.length}…`;
+            // Update row display and dataset
+            if (row) {
+              row.dataset.coins = String(Math.floor(next));
+              const cell = row.querySelector("td:nth-child(4)");
+              if (cell) cell.textContent = Number(next).toLocaleString();
+            }
+          } catch (e) {
+            console.error("Apply failed for", uid, e);
+            fail++;
+          }
+        }
+        statusEl.textContent = `Done. Success: ${ok}, Failed: ${fail}`;
+        // Refresh other panels if visible
+        loadUsers();
+        loadStats();
+      }
+
+      // Bind Roulette UI events
+      document.getElementById("roulette-load")?.addEventListener("click", loadRouletteConfig);
+      document.getElementById("roulette-save")?.addEventListener("click", () => saveRouletteConfig(auth.currentUser));
+      document.getElementById("roulette-reset")?.addEventListener("click", () => {
+        rouletteCfg = structuredClone(R_DEFAULT);
+        fillFormFromCfg();
+        drawRoulette();
+      });
+      document.getElementById("segment-add")?.addEventListener("click", () => {
+        rouletteCfg.segments.push({ label: "+1", delta: 1, color: "#4cc9f0", weight: 1 });
+        renderSegForm();
+        drawRoulette();
+      });
+      document.getElementById("segment-balance")?.addEventListener("click", normalizeWeights);
+      document.getElementById("roulette-spin")?.addEventListener("click", spinRoulette);
+      document.getElementById("roulette-apply")?.addEventListener("click", applyRouletteResult);
+      document.getElementById("roulette-search")?.addEventListener("input", filterRouletteUsers);
+      document.getElementById("roulette-hour")?.addEventListener("change", filterRouletteUsers);
+      document.getElementById("roulette-reload")?.addEventListener("click", loadRouletteUsers);
+      document.getElementById("select-all")?.addEventListener("click", () => selectAllRouletteUsers(true));
+      document.getElementById("select-none")?.addEventListener("click", () => selectAllRouletteUsers(false));
 
       // Data loaders
       async function loadStats() {
