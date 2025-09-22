@@ -275,6 +275,26 @@ Create stats/global doc with fields:
 Issue: Hour award finds zero users  
 Ensure users set hour via PATCH /user/hour first.
 
+### CI/CD: Firebase Hosting preview channel
+
+This repo includes a GitHub Actions workflow that deploys the `gambling` branch to a Firebase Hosting preview channel named `gambling` against the `test` Hosting target. Hosting targets are mapped in `.firebaserc`:
+
+- `live` → site `mooreco-in`
+- `test` → site `mooreco-in-test`
+
+Workflow: `.github/workflows/firebase-hosting-gambling.yml`
+
+Notes:
+
+- Correct CLI syntax for preview channels is `firebase hosting:channel:deploy <channel> --only <target>`.
+- Example used here: `--only test` to deploy only the "test" Hosting target.
+- If you see "Hosting site or target channel:<name> not detected", you're likely mixing `firebase deploy --only hosting:channel:<id>` (invalid) with preview channel commands.
+
+Auth in CI:
+
+- Using `--token` with `FIREBASE_TOKEN` works but is deprecated; prefer Application Default Credentials (service account) with `GOOGLE_APPLICATION_CREDENTIALS`.
+- Create a minimal-scoped service account (Firebase Hosting Admin), download JSON, store as an encrypted secret/artifact, and set env var `GOOGLE_APPLICATION_CREDENTIALS` in the job (or use GitHub OIDC to issue short‑lived credentials on-demand).
+
 ## License
 
 Copyright (C) 2025 Noah Harper
