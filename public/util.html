@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -50,9 +50,18 @@
       }
       body {
         margin: 0;
-        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto,
-          "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji",
-          "Segoe UI Symbol", sans-serif;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          "Helvetica Neue",
+          Arial,
+          "Apple Color Emoji",
+          "Segoe UI Emoji",
+          "Segoe UI Symbol",
+          sans-serif;
         color: var(--text);
         background: linear-gradient(
           180deg,
@@ -719,8 +728,8 @@
           last <= avg * 1.25
             ? "var(--ok)"
             : last <= avg * 1.75
-            ? "var(--warn)"
-            : "var(--err)";
+              ? "var(--warn)"
+              : "var(--err)";
         els.sparkWrap.style.color = tint;
       }
 
@@ -755,7 +764,7 @@
           rowStatus.className = "row";
           rowStatus.style.textAlign = "right";
           rowStatus.innerHTML = `<span class="pill"><span class="dot ${cls}"></span>${escapeHTML(
-            st
+            st,
           )}</span>`;
 
           grid.appendChild(rowName);
@@ -774,7 +783,7 @@
               ">": "&gt;",
               '"': "&quot;",
               "'": "&#39;",
-            }[c])
+            })[c],
         );
       }
 
@@ -806,8 +815,8 @@
         const allOk = (arr) =>
           (arr || []).every((d) =>
             ["ok", "healthy", "up"].includes(
-              String(d.status || "").toLowerCase()
-            )
+              String(d.status || "").toLowerCase(),
+            ),
           );
         if (["ok", "healthy", "up"].includes(base) && allOk(deps)) return "ok";
         if (base === "ok" || allOk(deps)) return "warn";
@@ -841,7 +850,7 @@
         const status = data.status ?? data.Status ?? "unknown";
         const latency = Number(data.latency ?? data.Latency ?? 0);
         const uptimeSeconds = Number(
-          data["uptime seconds"] ?? data.uptime_seconds ?? 0
+          data["uptime seconds"] ?? data.uptime_seconds ?? 0,
         );
 
         // API Status pill
@@ -895,7 +904,7 @@
       // Events
       els.refreshBtn.addEventListener("click", fetchHealth);
       els.intervalSel.addEventListener("change", (e) =>
-        setIntervalSeconds(e.target.value)
+        setIntervalSeconds(e.target.value),
       );
 
       window.addEventListener("resize", () => renderSparkline(samples));
@@ -945,8 +954,8 @@
           lastFetchedLeaderboard = Array.isArray(list)
             ? list
             : Array.isArray(data)
-            ? data
-            : null;
+              ? data
+              : null;
           renderLeaderboard(lastFetchedLeaderboard);
           return lastFetchedLeaderboard;
         } catch (err) {
@@ -1099,13 +1108,13 @@
         if (!amount || amount <= 0) {
           return showInlineError(
             "bond",
-            "Please enter a valid bond amount > 0"
+            "Please enter a valid bond amount > 0",
           );
         }
         if (!term || term < 1) {
           return showInlineError(
             "bond",
-            "Please enter a valid term (1-60 days)"
+            "Please enter a valid term (1-60 days)",
           );
         }
         const rate = bondRateFromGlobal(global);
@@ -1114,7 +1123,7 @@
         const expected = Number((amount + interest).toFixed(6));
         const purchasedAt = new Date();
         const payoutAt = new Date(
-          purchasedAt.getTime() + term * 24 * 60 * 60 * 1000
+          purchasedAt.getTime() + term * 24 * 60 * 60 * 1000,
         );
         els.bondInterest.textContent = String(interest);
         els.bondExpected.textContent = String(expected);
@@ -1172,7 +1181,7 @@
           console.warn("User fetch failed:", err);
           showInlineError(
             "user",
-            `Failed to fetch user info: ${String(err.message || err)}`
+            `Failed to fetch user info: ${String(err.message || err)}`,
           );
         }
       }
@@ -1183,7 +1192,7 @@
         if (!t)
           return showInlineError(
             "user",
-            "Enter a Firebase ID token first (paste only the token or include 'Bearer ...')"
+            "Enter a Firebase ID token first (paste only the token or include 'Bearer ...')",
           );
         fetchUserInfoWithToken(t);
       });
