@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Service Health — Mooreco</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0b0c10;
+        --panel: #111218;
+        --muted: #8b90a0;
+        --text: #e9eaf0;
+        --brand: #6a5acd; /* soft purple, because glamour */
+        --ok: #2ecc71;
+        --warn: #f1c40f;
+        --err: #ff5c5c;
+        --chip: #1a1b23;
+        --border: #1f2230;
+        --shadow: rgba(0, 0, 0, 0.25);
+        --link: #9fa6ff;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f6f7fb;
+          --panel: #ffffff;
+          --muted: #637083;
+          --text: #1a1d29;
+          --brand: #5b4fd8;
+          --ok: #1f9d55;
+          --warn: #b7791f;
+          --err: #e53e3e;
+          --chip: #f2f4f9;
+          --border: #e6e9f2;
+          --shadow: rgba(0, 0, 0, 0.06);
+          --link: #4a56ff;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto,
+          "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji",
+          "Segoe UI Symbol", sans-serif;
+        color: var(--text);
+        background: linear-gradient(
+          180deg,
+          var(--bg),
+          color-mix(in srgb, var(--bg) 85%, #000 15%)
+        );
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 28px 18px 60px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .logo {
+        height: 40px;
+        width: auto;
+        /* border-radius: 12px; */
+        /* background: conic-gradient(
+          from 210deg,
+          var(--brand),
+          #8b75ff 40%,
+          #ff9bd1 70%,
+          #66e5d1 100%
+        ); */
+        /* box-shadow: 0 8px 24px var(--shadow), */
+        /* inset 0 1px 0 rgba(255, 255, 255, 0.2); */
+      }
+      h1 {
+        font-size: 22px;
+        margin: 0;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .pill {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 6px 10px;
+        border-radius: 999px;
+        letter-spacing: 0.02em;
+        background: var(--chip);
+        border: 1px solid var(--border);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .dot.ok {
+        background: var(--ok);
+      }
+      .dot.warn {
+        background: var(--warn);
+      }
+      .dot.err {
+        background: var(--err);
+      }
+      .controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      button,
+      .select {
+        appearance: none;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        color: var(--text);
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 2px 6px var(--shadow);
+      }
+      button:hover {
+        transform: translateY(-1px);
+      }
+      a {
+        color: var(--link);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(12, 1fr);
+      }
+      .card {
+        grid-column: span 12;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 12px 26px var(--shadow);
+      }
+      @media (min-width: 720px) {
+        .span-4 {
+          grid-column: span 4;
+        }
+        .span-6 {
+          grid-column: span 6;
+        }
+        .span-8 {
+          grid-column: span 8;
+        }
+      }
+      .title {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .stat {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+      }
+      .stat .value {
+        font-size: 34px;
+        font-weight: 800;
+        line-height: 1;
+      }
+      .stat .unit {
+        font-size: 14px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      .deps {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 8px 12px;
+        align-items: center;
+      }
+      .deps .hdr {
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .hr {
+        height: 1px;
+        background: var(--border);
+        margin: 12px 0;
+      }
+
+      /* Sparkline */
+      .spark {
+        width: 100%;
+        height: 56px;
+        position: relative;
+        margin-top: 8px;
+        background: linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--panel) 85%, var(--chip) 15%),
+          var(--panel)
+        );
+        border-radius: 10px;
+        border: 1px dashed var(--border);
+        overflow: hidden;
+      }
+      .spark svg {
+        position: absolute;
+        inset: 0;
+      }
+      .legend {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .error {
+        background: color-mix(in srgb, var(--err) 10%, var(--panel) 90%);
+        border-color: color-mix(in srgb, var(--err) 35%, var(--border) 65%);
+      }
+      .hidden {
+        display: none !important;
+      }
+      /* Leaderboard */
+      .leaderboard-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .lb-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--panel) 90%, var(--chip) 10%),
+          var(--panel)
+        );
+      }
+      .lb-rank {
+        width: 36px;
+        font-weight: 700;
+        color: var(--muted);
+        text-align: center;
+      }
+      .lb-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        object-fit: cover;
+        flex: 0 0 40px;
+        background: linear-gradient(
+          180deg,
+          var(--chip),
+          color-mix(in srgb, var(--panel) 60%, #000 40%)
+        );
+      }
+      .lb-name {
+        font-weight: 600;
+      }
+      .lb-coins {
+        margin-left: auto;
+        font-weight: 800;
+        color: var(--brand);
+      }
+      .lb-muted {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .inline-error {
+        color: var(--err);
+        background: color-mix(in srgb, var(--err) 6%, var(--panel) 94%);
+        border: 1px solid color-mix(in srgb, var(--err) 30%, var(--border) 70%);
+        padding: 8px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <div class="logo" aria-hidden="true">
+            <img src="https://mooreco.in/img/favicon.png" class="logo" />
+          </div>
+          <div>
+            <h1>Service Health</h1>
+            <div class="muted" style="font-size: 13px">
+              Live view of <code>api.mooreco.in/health</code>
+            </div>
+          </div>
+        </div>
+        <div class="controls">
+          <span id="overall" class="pill"
+            ><span class="dot" id="overallDot"></span
+            ><span id="overallText">—</span></span
+          >
+          <button id="refreshBtn" title="Refresh now">↻ Refresh</button>
+          <select id="intervalSel" class="select" title="Auto-refresh interval">
+            <option value="0">Auto: Off</option>
+            <option value="1">Auto: 1s (NOT RECOMMENDED)</option>
+            <option value="15">Auto: 15s</option>
+            <option value="30" selected>Auto: 30s</option>
+            <option value="60">Auto: 60s</option>
+          </select>
+        </div>
+      </header>
+
+      <div id="errorCard" class="card error hidden">
+        <div class="title">Heads up</div>
+        <div>
+          Couldn’t fetch the health data. We’ll keep trying in the background.
+          Check CORS and that the endpoint allows GET from the browser:
+          <code>https://api.mooreco.in/health</code>.
+        </div>
+      </div>
+
+      <div class="grid">
+        <section class="card span-4" aria-live="polite">
+          <div class="title">API Status</div>
+          <div class="stat">
+            <div id="statusPill" class="pill">
+              <span id="statusDot" class="dot"></span
+              ><span id="statusText">—</span>
+            </div>
+          </div>
+          <div class="legend">
+            <div>
+              <strong>Endpoint:</strong>
+              <a
+                href="https://api.mooreco.in/health"
+                target="_blank"
+                rel="noopener"
+                >/health</a
+              >
+            </div>
+          </div>
+        </section>
+
+        <section class="card span-4">
+          <div class="title">Latency</div>
+          <div class="stat">
+            <div class="value" id="latencyVal">—</div>
+            <div class="unit">ms</div>
+          </div>
+          <div class="spark" id="sparkWrap" aria-hidden="true"></div>
+          <div class="legend"><span>Last 100 samples</span></div>
+        </section>
+
+        <section class="card span-4">
+          <div class="title">Uptime</div>
+          <div class="stat">
+            <div class="value" id="uptimeVal">—</div>
+            <div class="unit" id="uptimeUnit"></div>
+          </div>
+          <div class="legend">
+            <span id="uptimeExact" class="muted">—</span>
+          </div>
+        </section>
+
+        <section class="card span-8">
+          <div class="title">Dependencies</div>
+          <div class="deps" id="depsGrid">
+            <div class="hdr">Name</div>
+            <div class="hdr" style="text-align: right">Latency</div>
+            <div class="hdr" style="text-align: right">Status</div>
+            <div class="hr" style="grid-column: 1/-1"></div>
+            <!-- Rows injected here -->
+          </div>
+        </section>
+
+        <section class="card span-4">
+          <div class="title">Meta</div>
+          <div class="legend">
+            <div>Last updated: <span id="lastUpdated">—</span></div>
+            <div>Auto-refresh: <span id="autoState">30s</span></div>
+          </div>
+        </section>
+
+        <section class="card span-4" id="totalsCard">
+          <div class="title">Totals</div>
+          <div class="stat">
+            <div class="value" id="totalUsersVal">—</div>
+            <div class="unit">users</div>
+          </div>
+          <div class="stat" style="margin-top: 8px">
+            <div class="value" id="totalCoinsVal">—</div>
+            <div class="unit">coins</div>
+          </div>
+          <div class="legend">
+            <span id="totalsUpdated" class="muted">—</span>
+          </div>
+        </section>
+
+        <section class="card span-8" id="leaderboardCard">
+          <div class="title">Leaderboard</div>
+          <div id="leaderboardWrap">
+            <div class="leaderboard-list" id="leaderboardList">
+              <!-- rows injected here -->
+            </div>
+          </div>
+          <div class="hr"></div>
+          <div class="legend">
+            <span class="muted"
+              >Source:
+              <a
+                id="lbApiLink"
+                href="https://api.mooreco.in/stats/users/leaderboard"
+                target="_blank"
+                rel="noopener"
+                >api.mooreco.in/stats/users/leaderboard</a
+              ></span
+            >
+          </div>
+        </section>
+
+        <section class="card span-4">
+          <div class="title">Bond Calculator</div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; gap: 8px; align-items: center">
+              <input
+                id="bondAmount"
+                type="number"
+                min="1"
+                placeholder="Amount"
+                style="
+                  flex: 1;
+                  padding: 8px;
+                  border-radius: 10px;
+                  border: 1px solid var(--border);
+                  background: var(--panel);
+                  color: var(--text);
+                  font-weight: 600;
+                "
+              />
+              <input
+                id="bondTerm"
+                type="number"
+                min="1"
+                max="60"
+                placeholder="Days"
+                value="14"
+                style="
+                  width: 88px;
+                  padding: 8px;
+                  border-radius: 10px;
+                  border: 1px solid var(--border);
+                  background: var(--panel);
+                  color: var(--text);
+                  font-weight: 600;
+                "
+              />
+            </div>
+            <div class="legend" style="justify-content: space-between">
+              <div>
+                Global supply: <strong id="globalCoinsDisplay">—</strong>
+              </div>
+              <div>Rate: <strong id="bondRateDisplay">—</strong></div>
+            </div>
+            <div style="display: flex; gap: 8px">
+              <button id="calcBondBtn">Calculate</button>
+              <button id="refreshGlobalBtn">Refresh Global</button>
+            </div>
+            <div
+              id="bondError"
+              class="inline-error hidden"
+              role="alert"
+              aria-live="assertive"
+            ></div>
+            <div class="hr"></div>
+            <div>
+              <div class="muted">Result</div>
+              <div style="margin-top: 8px">
+                <div>Interest: <strong id="bondInterest">—</strong></div>
+                <div>Expected return: <strong id="bondExpected">—</strong></div>
+                <div>Matures: <strong id="bondPayoutAt">—</strong></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card span-4">
+          <div class="title">User (optional)</div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div class="muted">
+              Provide a Firebase ID token to fetch protected endpoints
+            </div>
+            <input
+              id="idTokenInput"
+              type="text"
+              placeholder="Bearer token..."
+              style="
+                padding: 8px;
+                border-radius: 10px;
+                border: 1px solid var(--border);
+                background: var(--panel);
+                color: var(--text);
+                font-weight: 600;
+              "
+            />
+            <div style="display: flex; gap: 8px">
+              <button id="fetchUserBtn">Fetch User Info</button>
+              <button id="clearTokenBtn">Clear</button>
+            </div>
+            <div
+              id="userError"
+              class="inline-error hidden"
+              role="alert"
+              aria-live="assertive"
+            ></div>
+            <div class="hr"></div>
+            <div>
+              <div class="muted">Profile</div>
+              <div style="margin-top: 8px">
+                Name: <strong id="userName">—</strong>
+              </div>
+              <div>Email: <strong id="userEmail">—</strong></div>
+              <div>Hour: <strong id="userHour">—</strong></div>
+            </div>
+            <div style="margin-top: 8px">
+              <div class="muted">Balances</div>
+              <div style="margin-top: 8px">
+                Coins: <strong id="userCoins">—</strong>
+              </div>
+              <div>Total earned: <strong id="userTotalEarned">—</strong></div>
+            </div>
+            <div style="margin-top: 8px">
+              <div class="muted">Active/Last Bond</div>
+              <div style="margin-top: 8px">
+                Amount: <strong id="userBondAmount">—</strong>
+              </div>
+              <div>Payout at: <strong id="userBondPayout">—</strong></div>
+              <div>Redeemed: <strong id="userBondRedeemed">—</strong></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="footer">
+        <div>
+          Keyboard: <span class="muted">R to refresh • 1/2/3 = interval</span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API = "https://api.mooreco.in/health";
+      const LB_API = "https://api.mooreco.in/stats/users/leaderboard/5";
+      const API_USERS_TOTAL = "https://api.mooreco.in/stats/users/total";
+      const API_COINS_TOTAL = "https://api.mooreco.in/stats/moorecoins/total";
+      const API_USER_INFO = "https://api.mooreco.in/user/info";
+      const API_USER_EXISTS = "https://api.mooreco.in/user/exists";
+      const els = {
+        errorCard: document.getElementById("errorCard"),
+        overall: document.getElementById("overall"),
+        overallDot: document.getElementById("overallDot"),
+        overallText: document.getElementById("overallText"),
+        statusPill: document.getElementById("statusPill"),
+        statusDot: document.getElementById("statusDot"),
+        statusText: document.getElementById("statusText"),
+        latencyVal: document.getElementById("latencyVal"),
+        uptimeVal: document.getElementById("uptimeVal"),
+        uptimeUnit: document.getElementById("uptimeUnit"),
+        uptimeExact: document.getElementById("uptimeExact"),
+        depsGrid: document.getElementById("depsGrid"),
+        lastUpdated: document.getElementById("lastUpdated"),
+        autoState: document.getElementById("autoState"),
+        sparkWrap: document.getElementById("sparkWrap"),
+        refreshBtn: document.getElementById("refreshBtn"),
+        intervalSel: document.getElementById("intervalSel"),
+        leaderboardList: document.getElementById("leaderboardList"),
+        lbApiLink: document.getElementById("lbApiLink"),
+        totalUsersVal: document.getElementById("totalUsersVal"),
+        totalCoinsVal: document.getElementById("totalCoinsVal"),
+        totalsUpdated: document.getElementById("totalsUpdated"),
+        // Bond/UI refs
+        bondAmount: document.getElementById("bondAmount"),
+        bondTerm: document.getElementById("bondTerm"),
+        calcBondBtn: document.getElementById("calcBondBtn"),
+        refreshGlobalBtn: document.getElementById("refreshGlobalBtn"),
+        globalCoinsDisplay: document.getElementById("globalCoinsDisplay"),
+        bondRateDisplay: document.getElementById("bondRateDisplay"),
+        bondInterest: document.getElementById("bondInterest"),
+        bondExpected: document.getElementById("bondExpected"),
+        bondPayoutAt: document.getElementById("bondPayoutAt"),
+        bondError: document.getElementById("bondError"),
+        // User refs
+        idTokenInput: document.getElementById("idTokenInput"),
+        fetchUserBtn: document.getElementById("fetchUserBtn"),
+        clearTokenBtn: document.getElementById("clearTokenBtn"),
+        userName: document.getElementById("userName"),
+        userEmail: document.getElementById("userEmail"),
+        userHour: document.getElementById("userHour"),
+        userCoins: document.getElementById("userCoins"),
+        userTotalEarned: document.getElementById("userTotalEarned"),
+        userBondAmount: document.getElementById("userBondAmount"),
+        userBondPayout: document.getElementById("userBondPayout"),
+        userBondRedeemed: document.getElementById("userBondRedeemed"),
+        userError: document.getElementById("userError"),
+      };
+
+      let timer = null;
+      let samples = []; // last N latency samples
+      const MAX_SAMPLES = 100;
+
+      function setOverall(status) {
+        const cls = statusClass(status);
+        els.overallDot.className = "dot " + cls;
+        els.overallText.textContent = status.toUpperCase();
+      }
+
+      function statusClass(status) {
+        if (!status) return "";
+        const s = String(status).toLowerCase();
+        if (s === "ok" || s === "healthy" || s === "up") return "ok";
+        if (s.includes("degrad") || s === "warn") return "warn";
+        return "err";
+      }
+
+      function ms(v) {
+        return Math.round(Number(v) || 0);
+      }
+
+      function humanUptime(seconds) {
+        const s = Math.max(0, Math.floor(seconds || 0));
+        const d = Math.floor(s / 86400);
+        const h = Math.floor((s % 86400) / 3600);
+        const m = Math.floor((s % 3600) / 60);
+        const sec = s % 60;
+        if (d > 0)
+          return { short: `${d}d ${h}h`, long: `${d}d ${h}h ${m}m ${sec}s` };
+        if (h > 0) return { short: `${h}h ${m}m`, long: `${h}h ${m}m ${sec}s` };
+        if (m > 0) return { short: `${m}m ${sec}s`, long: `${m}m ${sec}s` };
+        return { short: `${sec}s`, long: `${sec}s` };
+      }
+
+      function renderSparkline(arr) {
+        const w = els.sparkWrap.clientWidth || 320;
+        const h = 56;
+        const pad = 6;
+        const n = arr.length;
+        if (n < 2) {
+          els.sparkWrap.innerHTML = "";
+          return;
+        }
+        const max = Math.max(...arr, 1);
+        const pts = arr.map((v, i) => {
+          const x = pad + (i * (w - 2 * pad)) / (n - 1);
+          const y = h - pad - (v / max) * (h - 2 * pad);
+          return [x, y];
+        });
+        const d = pts
+          .map((p, i) => (i === 0 ? `M ${p[0]},${p[1]}` : `L ${p[0]},${p[1]}`))
+          .join(" ");
+        const area =
+          `M ${pad},${h - pad} ` +
+          pts.map((p) => `L ${p[0]},${p[1]}`).join(" ") +
+          ` L ${w - pad},${h - pad} Z`;
+        els.sparkWrap.innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Latency sparkline">
+          <path d="${area}" fill="currentColor" opacity="0.08"></path>
+          <path d="${d}" fill="none" stroke="currentColor" stroke-width="2"></path>
+        </svg>
+      `;
+        // tint based on trend
+        const last = arr[arr.length - 1];
+        const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
+        const tint =
+          last <= avg * 1.25
+            ? "var(--ok)"
+            : last <= avg * 1.75
+            ? "var(--warn)"
+            : "var(--err)";
+        els.sparkWrap.style.color = tint;
+      }
+
+      function renderDependencies(deps) {
+        // clear existing rows except headers/hr
+        const grid = els.depsGrid;
+        // remove previous rows
+        [...grid.querySelectorAll(".row")].forEach((n) => n.remove());
+        if (!Array.isArray(deps) || deps.length === 0) {
+          const row = document.createElement("div");
+          row.className = "row";
+          row.style.gridColumn = "1 / -1";
+          row.innerHTML = `<div class="muted">No dependencies reported.</div>`;
+          grid.appendChild(row);
+          return;
+        }
+        deps.forEach((dep) => {
+          const name = escapeHTML(dep.name ?? "(unknown)");
+          const latency = dep.latency != null ? `${ms(dep.latency)} ms` : "—";
+          const st = String(dep.status ?? "unknown");
+          const cls = statusClass(st);
+          const rowName = document.createElement("div");
+          rowName.className = "row";
+          rowName.textContent = name;
+
+          const rowLatency = document.createElement("div");
+          rowLatency.className = "row";
+          rowLatency.style.textAlign = "right";
+          rowLatency.textContent = latency;
+
+          const rowStatus = document.createElement("div");
+          rowStatus.className = "row";
+          rowStatus.style.textAlign = "right";
+          rowStatus.innerHTML = `<span class="pill"><span class="dot ${cls}"></span>${escapeHTML(
+            st
+          )}</span>`;
+
+          grid.appendChild(rowName);
+          grid.appendChild(rowLatency);
+          grid.appendChild(rowStatus);
+        });
+      }
+
+      function escapeHTML(s) {
+        return String(s).replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            }[c])
+        );
+      }
+
+      // Inline error helpers
+      function showInlineError(which, message) {
+        try {
+          const el = which === "bond" ? els.bondError : els.userError;
+          if (!el) return;
+          el.textContent = message || "An error occurred";
+          el.classList.remove("hidden");
+        } catch (e) {
+          console.warn("showInlineError failed", e);
+        }
+      }
+
+      function clearInlineError(which) {
+        try {
+          const el = which === "bond" ? els.bondError : els.userError;
+          if (!el) return;
+          el.textContent = "";
+          el.classList.add("hidden");
+        } catch (e) {
+          console.warn("clearInlineError failed", e);
+        }
+      }
+
+      function computeOverall(status, deps) {
+        const base = String(status || "").toLowerCase();
+        const allOk = (arr) =>
+          (arr || []).every((d) =>
+            ["ok", "healthy", "up"].includes(
+              String(d.status || "").toLowerCase()
+            )
+          );
+        if (["ok", "healthy", "up"].includes(base) && allOk(deps)) return "ok";
+        if (base === "ok" || allOk(deps)) return "warn";
+        return "err";
+      }
+
+      async function fetchHealth() {
+        els.errorCard.classList.add("hidden");
+        try {
+          const res = await fetch(API, { cache: "no-store" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          updateUI(data);
+        } catch (err) {
+          console.error("Health fetch failed:", err);
+          els.errorCard.classList.remove("hidden");
+        } finally {
+          const now = new Date();
+          els.lastUpdated.textContent = now.toLocaleString();
+        }
+      }
+
+      function updateUI(data) {
+        // Expected shape:
+        // {
+        //   status: "ok",
+        //   latency: 409.85,
+        //   "uptime seconds": 80074,
+        //   dependencies: { auth:{status:"ok",latency:243.52}, db:{status:"ok",latency:166.32} }
+        // }
+        const status = data.status ?? data.Status ?? "unknown";
+        const latency = Number(data.latency ?? data.Latency ?? 0);
+        const uptimeSeconds = Number(
+          data["uptime seconds"] ?? data.uptime_seconds ?? 0
+        );
+
+        // API Status pill
+        els.statusDot.className = "dot " + statusClass(status);
+        els.statusText.textContent = String(status).toUpperCase();
+
+        // Overall
+        const depsArr = toDepsArray(data.dependencies);
+        setOverall(computeOverall(status, depsArr));
+
+        // Latency
+        els.latencyVal.textContent = ms(latency);
+        samples.push(Math.max(0, latency));
+        if (samples.length > MAX_SAMPLES) samples = samples.slice(-MAX_SAMPLES);
+        renderSparkline(samples);
+
+        // Uptime
+        const up = humanUptime(uptimeSeconds);
+        els.uptimeVal.textContent = up.short;
+        els.uptimeUnit.textContent = "";
+        els.uptimeExact.textContent = `${uptimeSeconds.toLocaleString()} seconds (${
+          up.long
+        })`;
+
+        // Dependencies
+        renderDependencies(depsArr);
+      }
+
+      function toDepsArray(depsObj) {
+        if (!depsObj || typeof depsObj !== "object") return [];
+        return Object.keys(depsObj).map((k) => ({
+          name: k,
+          status: depsObj[k]?.status ?? depsObj[k]?.Status ?? "unknown",
+          latency: depsObj[k]?.latency ?? depsObj[k]?.Latency ?? null,
+        }));
+      }
+
+      function setIntervalSeconds(sec) {
+        if (timer) {
+          clearInterval(timer);
+          timer = null;
+        }
+        if (Number(sec) > 0) {
+          timer = setInterval(fetchHealth, Number(sec) * 1000);
+          els.autoState.textContent = `${sec}s`;
+        } else {
+          els.autoState.textContent = "Off";
+        }
+      }
+
+      // Events
+      els.refreshBtn.addEventListener("click", fetchHealth);
+      els.intervalSel.addEventListener("change", (e) =>
+        setIntervalSeconds(e.target.value)
+      );
+
+      window.addEventListener("resize", () => renderSparkline(samples));
+      window.addEventListener("keydown", (e) => {
+        if (e.key.toLowerCase() === "r") fetchHealth();
+        if (e.key === "1") {
+          els.intervalSel.value = "15";
+          setIntervalSeconds(15);
+        }
+        if (e.key === "2") {
+          els.intervalSel.value = "30";
+          setIntervalSeconds(30);
+        }
+        if (e.key === "3") {
+          els.intervalSel.value = "60";
+          setIntervalSeconds(60);
+        }
+        if (e.key === "0") {
+          els.intervalSel.value = "1";
+          setIntervalSeconds(1);
+        }
+        if (e.key === "o") {
+          els.intervalSel.value = "0";
+          setIntervalSeconds(0);
+        }
+      });
+
+      // Kickoff
+      setIntervalSeconds(Number(els.intervalSel.value));
+      fetchHealth();
+      fetchTotals();
+      // fetch global coins for bond calc on load
+      fetchGlobalCoins();
+
+      // --- Leaderboard viewer ---
+      // store the most recently fetched leaderboard (null until fetched)
+      let lastFetchedLeaderboard = null;
+
+      async function fetchLeaderboard() {
+        // try fetch, fallback to embedded data
+        try {
+          const res = await fetch(LB_API, { cache: "no-store" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          const list = data.leaderboard || data || null;
+          // cache the fetched leaderboard so other parts (totals) can use it
+          lastFetchedLeaderboard = Array.isArray(list)
+            ? list
+            : Array.isArray(data)
+            ? data
+            : null;
+          renderLeaderboard(lastFetchedLeaderboard);
+          return lastFetchedLeaderboard;
+        } catch (err) {
+          console.warn("Leaderboard fetch failed:", err);
+          return null;
+        }
+      }
+
+      function renderLeaderboard(list) {
+        const wrap = els.leaderboardList;
+        wrap.innerHTML = "";
+        if (!Array.isArray(list) || list.length === 0) {
+          wrap.innerHTML = '<div class="muted">No leaderboard data.</div>';
+          return;
+        }
+        // sort by coins desc
+        list = list
+          .slice()
+          .sort((a, b) => Number(b.coins || 0) - Number(a.coins || 0));
+        list.forEach((p, idx) => {
+          const row = document.createElement("div");
+          row.className = "lb-row";
+          const rank = document.createElement("div");
+          rank.className = "lb-rank";
+          rank.textContent = `#${idx + 1}`;
+          const img = document.createElement("img");
+          img.className = "lb-avatar";
+          img.src = p.photoURL || "";
+          img.alt = "";
+          const nameWrap = document.createElement("div");
+          nameWrap.style.display = "flex";
+          nameWrap.style.flexDirection = "column";
+          const name = document.createElement("div");
+          name.className = "lb-name";
+          name.textContent = p.displayName || p.uid || "Unknown";
+          const id = document.createElement("div");
+          id.className = "lb-muted";
+          id.textContent = p.uid || "";
+          nameWrap.appendChild(name);
+          if (p.uid) nameWrap.appendChild(id);
+          const coins = document.createElement("div");
+          coins.className = "lb-coins";
+          coins.textContent = `${Number(p.coins || 0)}`;
+          row.appendChild(rank);
+          row.appendChild(img);
+          row.appendChild(nameWrap);
+          row.appendChild(coins);
+          wrap.appendChild(row);
+        });
+      }
+
+      // keyboard shortcut L to reload leaderboard
+      window.addEventListener("keydown", (e) => {
+        if (e.key.toLowerCase() === "l") fetchLeaderboard();
+      });
+
+      // initial load
+      fetchLeaderboard();
+
+      // Totals: try endpoints, fallback to leaderboard-derived totals
+      async function fetchTotals() {
+        // defaults
+        let users = null,
+          coins = null;
+        try {
+          const [uRes, cRes] = await Promise.all([
+            fetch(API_USERS_TOTAL, { cache: "no-store" }),
+            fetch(API_COINS_TOTAL, { cache: "no-store" }),
+          ]);
+
+          async function parseMaybeJsonOrText(res) {
+            // try JSON first, fall back to text. Return parsed value (could be
+            // object or primitive) or null on failure.
+            try {
+              return await res.json();
+            } catch (e) {
+              try {
+                const t = await res.text();
+                // trim and return raw text — caller will Number() it if needed
+                return t.trim();
+              } catch (e2) {
+                return null;
+              }
+            }
+          }
+
+          if (uRes.ok) {
+            const ud = await parseMaybeJsonOrText(uRes);
+            users = ud?.total ?? ud?.count ?? (Number(ud) || null);
+          }
+          if (cRes.ok) {
+            const cd = await parseMaybeJsonOrText(cRes);
+            // support { "moorecoins": 123 } as returned by the API
+            coins =
+              cd?.moorecoins ?? cd?.total ?? cd?.coins ?? (Number(cd) || null);
+          }
+        } catch (err) {
+          // ignore, we'll show unavailable totals
+          console.warn("Totals fetch failed:", err);
+        }
+
+        // If totals endpoints failed, don't derive totals from the leaderboard
+        // (leaderboard contains only a subset). Leave values null so the UI
+        // shows "—" for unavailable totals.
+
+        // final assignment with simple formatting
+        els.totalUsersVal.textContent = users != null ? String(users) : "—";
+        els.totalCoinsVal.textContent = coins != null ? String(coins) : "—";
+        els.totalsUpdated.textContent = `Updated: ${new Date().toLocaleString()}`;
+      }
+
+      // refresh totals when pressing the main refresh button
+      els.refreshBtn.addEventListener("click", () => {
+        fetchTotals();
+        fetchLeaderboard();
+      });
+
+      // --- Bond rate & calculator ---
+      // rate = 0.1 + 0.65 * exp(-0.000486 * totalGlobalCoins)
+      function bondRateFromGlobal(totalGlobalCoins) {
+        const rate =
+          0.1 + 0.65 * Math.exp(-0.000486 * Number(totalGlobalCoins || 0));
+        return Math.max(0, rate);
+      }
+
+      async function fetchGlobalCoins() {
+        try {
+          const res = await fetch(API_COINS_TOTAL, { cache: "no-store" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          const coins = data?.moorecoins ?? data?.total ?? Number(data) ?? null;
+          els.globalCoinsDisplay.textContent =
+            coins != null ? String(coins) : "—";
+          const rate = bondRateFromGlobal(coins || 0);
+          els.bondRateDisplay.textContent = `${(rate * 100).toFixed(3)}%`;
+          return coins;
+        } catch (err) {
+          console.warn("Global coins fetch failed:", err);
+          els.globalCoinsDisplay.textContent = "—";
+          els.bondRateDisplay.textContent = "—";
+          return null;
+        }
+      }
+
+      function calculateBondPreview() {
+        const amount = Number(els.bondAmount.value || 0);
+        const term = Number(els.bondTerm.value || 14);
+        const global = Number(els.globalCoinsDisplay.textContent) || 0;
+        clearInlineError("bond");
+        if (!amount || amount <= 0) {
+          return showInlineError(
+            "bond",
+            "Please enter a valid bond amount > 0"
+          );
+        }
+        if (!term || term < 1) {
+          return showInlineError(
+            "bond",
+            "Please enter a valid term (1-60 days)"
+          );
+        }
+        const rate = bondRateFromGlobal(global);
+        // The API docs show 'interestRate' and 'expectedReturn = round(amount*(1+rate),6)'
+        const interest = Number((amount * rate).toFixed(6));
+        const expected = Number((amount + interest).toFixed(6));
+        const purchasedAt = new Date();
+        const payoutAt = new Date(
+          purchasedAt.getTime() + term * 24 * 60 * 60 * 1000
+        );
+        els.bondInterest.textContent = String(interest);
+        els.bondExpected.textContent = String(expected);
+        els.bondPayoutAt.textContent = payoutAt.toISOString();
+        els.bondRateDisplay.textContent = `${(rate * 100).toFixed(3)}%`;
+      }
+
+      els.calcBondBtn.addEventListener("click", calculateBondPreview);
+      els.refreshGlobalBtn.addEventListener("click", fetchGlobalCoins);
+
+      // --- User info (protected) ---
+      function setUserUIFromDoc(doc) {
+        // doc may be in new nested schema or legacy flat
+        const profile = doc?.profile ?? {};
+        const balances = doc?.balances ?? {};
+        const displayName = profile?.displayName ?? doc?.displayName ?? null;
+        const email = profile?.email ?? doc?.email ?? null;
+        const hour = profile?.hour ?? doc?.hour ?? null;
+        const coins = balances?.coins ?? doc?.coins ?? null;
+        const totalEarned = balances?.totalEarned ?? doc?.totalEarned ?? null;
+        els.userName.textContent = displayName ?? "—";
+        els.userEmail.textContent = email ?? "—";
+        els.userHour.textContent = hour != null ? String(hour) : "—";
+        els.userCoins.textContent = coins != null ? String(coins) : "—";
+        els.userTotalEarned.textContent =
+          totalEarned != null ? String(totalEarned) : "—";
+        const bond = doc?.bond ?? null;
+        if (bond) {
+          els.userBondAmount.textContent = String(bond.amount ?? "—");
+          els.userBondPayout.textContent = String(bond.payoutAt ?? "—");
+          els.userBondRedeemed.textContent = String(bond.redeemed ?? false);
+        } else {
+          els.userBondAmount.textContent = "—";
+          els.userBondPayout.textContent = "—";
+          els.userBondRedeemed.textContent = "—";
+        }
+      }
+
+      async function fetchUserInfoWithToken(token) {
+        try {
+          const res = await fetch(API_USER_INFO, {
+            cache: "no-store",
+            headers: {
+              Authorization: `Bearer ${token.replace(/^Bearer\s+/i, "")}`,
+            },
+          });
+          if (!res.ok) {
+            const errText = await res.text().catch(() => "");
+            throw new Error(`HTTP ${res.status} ${errText}`);
+          }
+          const data = await res.json();
+          setUserUIFromDoc(data);
+          clearInlineError("user");
+        } catch (err) {
+          console.warn("User fetch failed:", err);
+          showInlineError(
+            "user",
+            `Failed to fetch user info: ${String(err.message || err)}`
+          );
+        }
+      }
+
+      els.fetchUserBtn.addEventListener("click", () => {
+        const t = els.idTokenInput.value.trim();
+        clearInlineError("user");
+        if (!t)
+          return showInlineError(
+            "user",
+            "Enter a Firebase ID token first (paste only the token or include 'Bearer ...')"
+          );
+        fetchUserInfoWithToken(t);
+      });
+      els.clearTokenBtn.addEventListener("click", () => {
+        els.idTokenInput.value = "";
+        // clear ui
+        setUserUIFromDoc({});
+      });
+    </script>
+  </body>
+</html>
