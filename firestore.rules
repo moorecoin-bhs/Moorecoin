@@ -34,6 +34,10 @@ service cloud.firestore {
     // Reviews/Feedback: allow authenticated users to CREATE only.
     // Admins may read/update/delete for moderation.
     match /reviews/{id} {
+      // Anyone signed in can read reviews (admin UI also enforces access in-app)
+      allow read: if request.auth != null;
+
+      // Authenticated users can create their own review with constraints
       allow create: if request.auth != null &&
         request.resource.data.message is string &&
         request.resource.data.message.size() > 0 &&
@@ -43,7 +47,8 @@ service cloud.firestore {
           (request.resource.data.rating is int && request.resource.data.rating >= 1 && request.resource.data.rating <= 5)) &&
         request.resource.data.uid == request.auth.uid;
 
-      allow read, update, delete: if request.auth != null && (
+      // Only admins can update or delete
+      allow update, delete: if request.auth != null && (
         request.auth.token.admin == true ||
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.flags.admin == true ||
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true
