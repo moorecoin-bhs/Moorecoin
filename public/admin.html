@@ -366,8 +366,21 @@
         <div class="cards" style="gap: 10px; align-items: flex-start">
           <div class="card" style="flex: 1 1 680px">
             <h2 style="margin-top: 0">User Feedback</h2>
-            <div style="display:flex; gap:10px; align-items:center; margin: 8px 0 10px">
-              <input id="feedback-search" type="search" placeholder="Search subject/message/email…" aria-label="Search feedback" style="flex:1; min-width: 240px" />
+            <div
+              style="
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                margin: 8px 0 10px;
+              "
+            >
+              <input
+                id="feedback-search"
+                type="search"
+                placeholder="Search subject/message/email…"
+                aria-label="Search feedback"
+                style="flex: 1; min-width: 240px"
+              />
               <select id="feedback-filter" aria-label="Filter category">
                 <option value="">All categories</option>
                 <option value="general">General</option>
@@ -383,7 +396,7 @@
                 <option value="spam">Spam</option>
               </select>
             </div>
-            <div style="overflow:auto">
+            <div style="overflow: auto">
               <table class="table" style="min-width: 760px">
                 <thead>
                   <tr>
@@ -396,7 +409,11 @@
                   </tr>
                 </thead>
                 <tbody id="feedback-tbody">
-                  <tr><td colspan="6" style="text-align:center; opacity:.7">Loading…</td></tr>
+                  <tr>
+                    <td colspan="6" style="text-align: center; opacity: 0.7">
+                      Loading…
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -1737,7 +1754,9 @@
       let feedbackUnsub = null;
       let feedbackCache = [];
       function renderFeedbackList() {
-        const q = (document.getElementById("feedback-search").value || "").toLowerCase();
+        const q = (
+          document.getElementById("feedback-search").value || ""
+        ).toLowerCase();
         const cat = document.getElementById("feedback-filter").value;
         const stat = document.getElementById("feedback-status-filter").value;
         const tbody = document.getElementById("feedback-tbody");
@@ -1746,14 +1765,18 @@
         feedbackCache.forEach((r) => {
           if (cat && r.category !== cat) return;
           if (stat && (r.status || "new") !== stat) return;
-          const hay = `${r.subject || ""}\n${r.message || ""}\n${r.user?.email || ""}\n${r.user?.name || ""}`.toLowerCase();
+          const hay =
+            `${r.subject || ""}\n${r.message || ""}\n${r.user?.email || ""}\n${r.user?.name || ""}`.toLowerCase();
           if (q && !hay.includes(q)) return;
-          const ts = r.createdAt?._seconds ? new Date(r.createdAt._seconds * 1000) : null;
+          const ts = r.createdAt?._seconds
+            ? new Date(r.createdAt._seconds * 1000)
+            : null;
           const when = ts ? ts.toLocaleString() : "--";
           const user = `${r.user?.name || "(anon)"}${r.user?.email ? `\n${r.user.email}` : ""}`;
           const rating = r.rating ? `★`.repeat(r.rating) : "-";
-          const msg = (r.subject ? `<strong>${escapeHtml(r.subject)}</strong> — ` : "") +
-                      `${escapeHtml((r.message || "").slice(0, 240))}${(r.message || "").length > 240 ? "…" : ""}`;
+          const msg =
+            (r.subject ? `<strong>${escapeHtml(r.subject)}</strong> — ` : "") +
+            `${escapeHtml((r.message || "").slice(0, 240))}${(r.message || "").length > 240 ? "…" : ""}`;
           rows.push(`<tr data-id="${r.__id}">
             <td style="white-space:nowrap">${when}</td>
             <td>${escapeHtml(r.category || "")}</td>
@@ -1762,18 +1785,38 @@
             <td>${msg}</td>
             <td>
               <select class="fb-status">
-                ${["new","reviewed","closed","spam"].map(s => `<option value="${s}" ${s===(r.status||"new")?"selected":""}>${s}</option>`).join("")}
+                ${["new", "reviewed", "closed", "spam"].map((s) => `<option value="${s}" ${s === (r.status || "new") ? "selected" : ""}>${s}</option>`).join("")}
               </select>
               <button class="btn-secondary btn-xs fb-view">View</button>
               <button class="btn-secondary btn-xs fb-del" title="Delete">🗑</button>
             </td>
           </tr>`);
         });
-        tbody.innerHTML = rows.length ? rows.join("") : '<tr><td colspan="6" style="text-align:center; opacity:.7">No feedback</td></tr>';
+        tbody.innerHTML = rows.length
+          ? rows.join("")
+          : '<tr><td colspan="6" style="text-align:center; opacity:.7">No feedback</td></tr>';
         // Wire per-row actions
-        tbody.querySelectorAll(".fb-view").forEach((b) => b.addEventListener("click", () => openFeedbackModal(b.closest("tr").dataset.id)));
-        tbody.querySelectorAll(".fb-del").forEach((b) => b.addEventListener("click", () => deleteFeedback(b.closest("tr").dataset.id)));
-        tbody.querySelectorAll(".fb-status").forEach((sel) => sel.addEventListener("change", (e) => updateFeedbackStatus(sel.closest("tr").dataset.id, sel.value)));
+        tbody
+          .querySelectorAll(".fb-view")
+          .forEach((b) =>
+            b.addEventListener("click", () =>
+              openFeedbackModal(b.closest("tr").dataset.id),
+            ),
+          );
+        tbody
+          .querySelectorAll(".fb-del")
+          .forEach((b) =>
+            b.addEventListener("click", () =>
+              deleteFeedback(b.closest("tr").dataset.id),
+            ),
+          );
+        tbody
+          .querySelectorAll(".fb-status")
+          .forEach((sel) =>
+            sel.addEventListener("change", (e) =>
+              updateFeedbackStatus(sel.closest("tr").dataset.id, sel.value),
+            ),
+          );
       }
       function escapeHtml(s) {
         return String(s)
@@ -1788,23 +1831,41 @@
         if (feedbackUnsub) return; // already streaming
         try {
           const db = getFirestore(app);
-          const qRef = query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(200));
-          feedbackUnsub = onSnapshot(qRef, (snap) => {
-            feedbackCache = snap.docs.map((d) => ({ __id: d.id, ...d.data() }));
-            renderFeedbackList();
-            status.textContent = `Loaded ${feedbackCache.length} items`;
-          }, (err) => {
-            console.error(err);
-            status.textContent = "Error loading feedback: " + err.message;
-          });
+          const qRef = query(
+            collection(db, "reviews"),
+            orderBy("createdAt", "desc"),
+            limit(200),
+          );
+          feedbackUnsub = onSnapshot(
+            qRef,
+            (snap) => {
+              feedbackCache = snap.docs.map((d) => ({
+                __id: d.id,
+                ...d.data(),
+              }));
+              renderFeedbackList();
+              status.textContent = `Loaded ${feedbackCache.length} items`;
+            },
+            (err) => {
+              console.error(err);
+              status.textContent = "Error loading feedback: " + err.message;
+            },
+          );
         } catch (e) {
           console.error(e);
-          document.getElementById("feedback-status").textContent = "Failed to start stream.";
+          document.getElementById("feedback-status").textContent =
+            "Failed to start stream.";
         }
         // Filters
-        document.getElementById("feedback-search").addEventListener("input", renderFeedbackList);
-        document.getElementById("feedback-filter").addEventListener("change", renderFeedbackList);
-        document.getElementById("feedback-status-filter").addEventListener("change", renderFeedbackList);
+        document
+          .getElementById("feedback-search")
+          .addEventListener("input", renderFeedbackList);
+        document
+          .getElementById("feedback-filter")
+          .addEventListener("change", renderFeedbackList);
+        document
+          .getElementById("feedback-status-filter")
+          .addEventListener("change", renderFeedbackList);
       }
       async function updateFeedbackStatus(id, status) {
         try {
@@ -1827,7 +1888,9 @@
         const r = feedbackCache.find((x) => x.__id === id);
         if (!r) return;
         const div = document.createElement("div");
-        const ts = r.createdAt?._seconds ? new Date(r.createdAt._seconds * 1000).toLocaleString() : "--";
+        const ts = r.createdAt?._seconds
+          ? new Date(r.createdAt._seconds * 1000).toLocaleString()
+          : "--";
         div.innerHTML = `
           <div class="notice" style="margin-bottom:10px"><strong>Submitted:</strong> ${ts}</div>
           <p><strong>User:</strong> ${escapeHtml(r.user?.name || "(anon)")}${r.user?.email ? ` &lt;${escapeHtml(r.user.email)}&gt;` : ""}</p>
@@ -1839,7 +1902,11 @@
           </div>
           ${r.contact ? `<p style="margin-top:8px"><strong>Contact:</strong> ${escapeHtml(r.contact)}</p>` : ""}
         `;
-        createModal({ title: "Feedback Details", body: div, actions: [{ label: "Close" }] });
+        createModal({
+          title: "Feedback Details",
+          body: div,
+          actions: [{ label: "Close" }],
+        });
       }
       function filterRouletteUsers() {
         const q = document
