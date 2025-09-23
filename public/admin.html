@@ -366,14 +366,7 @@
         <div class="cards" style="gap: 10px; align-items: flex-start">
           <div class="card" style="flex: 1 1 680px">
             <h2 style="margin-top: 0">User Feedback</h2>
-            <div
-              style="
-                display: flex;
-                gap: 10px;
-                align-items: center;
-                margin: 8px 0 10px;
-              "
-            >
+            <div class="users-actions" style="margin: 8px 0 10px">
               <input
                 id="feedback-search"
                 type="search"
@@ -396,8 +389,8 @@
                 <option value="spam">Spam</option>
               </select>
             </div>
-            <div style="overflow: auto">
-              <table class="table" style="min-width: 760px">
+            <div class="table-wrap">
+              <table class="table feedback-table">
                 <thead>
                   <tr>
                     <th style="width: 120px">When</th>
