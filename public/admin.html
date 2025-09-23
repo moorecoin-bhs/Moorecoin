@@ -314,6 +314,14 @@
           >
             Roulette
           </button>
+          <button
+            role="tab"
+            aria-selected="false"
+            id="tab-feedback"
+            data-target="panel-feedback"
+          >
+            Feedback
+          </button>
         </div>
       </header>
       <section
@@ -347,6 +355,54 @@
           <button class="btn-secondary" id="btn-refresh-stats">Refresh</button>
         </div>
         <p class="inline-info" id="stats-status" aria-live="polite"></p>
+      </section>
+      <section
+        id="panel-feedback"
+        class="panel"
+        role="tabpanel"
+        aria-labelledby="tab-feedback"
+        hidden
+      >
+        <div class="cards" style="gap: 10px; align-items: flex-start">
+          <div class="card" style="flex: 1 1 680px">
+            <h2 style="margin-top: 0">User Feedback</h2>
+            <div style="display:flex; gap:10px; align-items:center; margin: 8px 0 10px">
+              <input id="feedback-search" type="search" placeholder="Search subject/message/email…" aria-label="Search feedback" style="flex:1; min-width: 240px" />
+              <select id="feedback-filter" aria-label="Filter category">
+                <option value="">All categories</option>
+                <option value="general">General</option>
+                <option value="bug">Bug</option>
+                <option value="feature">Feature</option>
+                <option value="ui">Design/UI</option>
+              </select>
+              <select id="feedback-status-filter" aria-label="Filter status">
+                <option value="">All status</option>
+                <option value="new">New</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="closed">Closed</option>
+                <option value="spam">Spam</option>
+              </select>
+            </div>
+            <div style="overflow:auto">
+              <table class="table" style="min-width: 760px">
+                <thead>
+                  <tr>
+                    <th style="width: 120px">When</th>
+                    <th style="width: 80px">Category</th>
+                    <th style="width: 70px">Rating</th>
+                    <th style="width: 160px">User</th>
+                    <th>Subject / Message</th>
+                    <th style="width: 160px">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="feedback-tbody">
+                  <tr><td colspan="6" style="text-align:center; opacity:.7">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p id="feedback-status" class="inline-info" aria-live="polite"></p>
+          </div>
+        </div>
       </section>
       <section
         id="panel-settings"
@@ -917,6 +973,12 @@
         getDoc,
         setDoc,
         serverTimestamp,
+        collection,
+        query,
+        orderBy,
+        limit,
+        updateDoc,
+        deleteDoc,
       } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
       const auth = getAuth(app);
       let currentIdToken = null;
@@ -1026,6 +1088,8 @@
                 loadRouletteConfig();
                 loadRouletteUsers();
                 drawRoulette();
+              } else if (panelId === "panel-feedback") {
+                startFeedbackStream();
               }
             } else {
               panel.classList.remove("active");
@@ -1665,6 +1729,117 @@
           console.error(e);
           status.textContent = "Failed: " + e.message;
         }
+      }
+
+      // -----------------
+      // Feedback (reviews)
+      // -----------------
+      let feedbackUnsub = null;
+      let feedbackCache = [];
+      function renderFeedbackList() {
+        const q = (document.getElementById("feedback-search").value || "").toLowerCase();
+        const cat = document.getElementById("feedback-filter").value;
+        const stat = document.getElementById("feedback-status-filter").value;
+        const tbody = document.getElementById("feedback-tbody");
+        if (!tbody) return;
+        const rows = [];
+        feedbackCache.forEach((r) => {
+          if (cat && r.category !== cat) return;
+          if (stat && (r.status || "new") !== stat) return;
+          const hay = `${r.subject || ""}\n${r.message || ""}\n${r.user?.email || ""}\n${r.user?.name || ""}`.toLowerCase();
+          if (q && !hay.includes(q)) return;
+          const ts = r.createdAt?._seconds ? new Date(r.createdAt._seconds * 1000) : null;
+          const when = ts ? ts.toLocaleString() : "--";
+          const user = `${r.user?.name || "(anon)"}${r.user?.email ? `\n${r.user.email}` : ""}`;
+          const rating = r.rating ? `★`.repeat(r.rating) : "-";
+          const msg = (r.subject ? `<strong>${escapeHtml(r.subject)}</strong> — ` : "") +
+                      `${escapeHtml((r.message || "").slice(0, 240))}${(r.message || "").length > 240 ? "…" : ""}`;
+          rows.push(`<tr data-id="${r.__id}">
+            <td style="white-space:nowrap">${when}</td>
+            <td>${escapeHtml(r.category || "")}</td>
+            <td>${rating}</td>
+            <td>${escapeHtml(user)}</td>
+            <td>${msg}</td>
+            <td>
+              <select class="fb-status">
+                ${["new","reviewed","closed","spam"].map(s => `<option value="${s}" ${s===(r.status||"new")?"selected":""}>${s}</option>`).join("")}
+              </select>
+              <button class="btn-secondary btn-xs fb-view">View</button>
+              <button class="btn-secondary btn-xs fb-del" title="Delete">🗑</button>
+            </td>
+          </tr>`);
+        });
+        tbody.innerHTML = rows.length ? rows.join("") : '<tr><td colspan="6" style="text-align:center; opacity:.7">No feedback</td></tr>';
+        // Wire per-row actions
+        tbody.querySelectorAll(".fb-view").forEach((b) => b.addEventListener("click", () => openFeedbackModal(b.closest("tr").dataset.id)));
+        tbody.querySelectorAll(".fb-del").forEach((b) => b.addEventListener("click", () => deleteFeedback(b.closest("tr").dataset.id)));
+        tbody.querySelectorAll(".fb-status").forEach((sel) => sel.addEventListener("change", (e) => updateFeedbackStatus(sel.closest("tr").dataset.id, sel.value)));
+      }
+      function escapeHtml(s) {
+        return String(s)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+      function startFeedbackStream() {
+        const status = document.getElementById("feedback-status");
+        if (feedbackUnsub) return; // already streaming
+        try {
+          const db = getFirestore(app);
+          const qRef = query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(200));
+          feedbackUnsub = onSnapshot(qRef, (snap) => {
+            feedbackCache = snap.docs.map((d) => ({ __id: d.id, ...d.data() }));
+            renderFeedbackList();
+            status.textContent = `Loaded ${feedbackCache.length} items`;
+          }, (err) => {
+            console.error(err);
+            status.textContent = "Error loading feedback: " + err.message;
+          });
+        } catch (e) {
+          console.error(e);
+          document.getElementById("feedback-status").textContent = "Failed to start stream.";
+        }
+        // Filters
+        document.getElementById("feedback-search").addEventListener("input", renderFeedbackList);
+        document.getElementById("feedback-filter").addEventListener("change", renderFeedbackList);
+        document.getElementById("feedback-status-filter").addEventListener("change", renderFeedbackList);
+      }
+      async function updateFeedbackStatus(id, status) {
+        try {
+          const db = getFirestore(app);
+          await updateDoc(doc(db, "reviews", id), { status });
+        } catch (e) {
+          alert("Failed to update: " + e.message);
+        }
+      }
+      async function deleteFeedback(id) {
+        if (!confirm("Delete this feedback? This cannot be undone.")) return;
+        try {
+          const db = getFirestore(app);
+          await deleteDoc(doc(db, "reviews", id));
+        } catch (e) {
+          alert("Delete failed: " + e.message);
+        }
+      }
+      function openFeedbackModal(id) {
+        const r = feedbackCache.find((x) => x.__id === id);
+        if (!r) return;
+        const div = document.createElement("div");
+        const ts = r.createdAt?._seconds ? new Date(r.createdAt._seconds * 1000).toLocaleString() : "--";
+        div.innerHTML = `
+          <div class="notice" style="margin-bottom:10px"><strong>Submitted:</strong> ${ts}</div>
+          <p><strong>User:</strong> ${escapeHtml(r.user?.name || "(anon)")}${r.user?.email ? ` &lt;${escapeHtml(r.user.email)}&gt;` : ""}</p>
+          <p><strong>Category:</strong> ${escapeHtml(r.category || "")}</p>
+          <p><strong>Rating:</strong> ${r.rating ? `${"★".repeat(r.rating)} (${r.rating}/5)` : "-"}</p>
+          ${r.subject ? `<p><strong>Subject:</strong> ${escapeHtml(r.subject)}</p>` : ""}
+          <div style="white-space: pre-wrap; word-break: break-word; border:1px solid #30343a; padding:10px; border-radius:10px; background:#23262b; margin-top:8px;">
+            ${escapeHtml(r.message || "")}
+          </div>
+          ${r.contact ? `<p style="margin-top:8px"><strong>Contact:</strong> ${escapeHtml(r.contact)}</p>` : ""}
+        `;
+        createModal({ title: "Feedback Details", body: div, actions: [{ label: "Close" }] });
       }
       function filterRouletteUsers() {
         const q = document

@@ -32,17 +32,10 @@
       <header class="page-header">
         <img src="./img/favicon.png" alt="Moorecoin Logo" class="page-logo" />
         <h1>Feedback</h1>
-        <p class="muted">
-          We can't wait to hear from you. This form is a preview; submission is
-          disabled until backend is ready.
-        </p>
+        <p class="muted" id="signin-status">Share your thoughts. If you're not signed in, we'll prompt you at submit.</p>
       </header>
 
-      <form
-        class="feedback-form"
-        aria-describedby="feedback-note"
-        onsubmit="return false;"
-      >
+      <form class="feedback-form" aria-describedby="feedback-note" onsubmit="return false;">
         <div class="row two-col">
           <div class="field">
             <label for="subject">Subject</label>
@@ -106,26 +99,174 @@
           <button type="submit" class="button" id="submit" disabled>
             Submit
           </button>
-          <span class="note" id="feedback-note"
-            >Submission is disabled until backend is available.</span
-          >
+          <span class="note" id="feedback-note">Draft is saved locally. We store reviews securely with your account.</span>
         </div>
       </form>
     </main>
+    <script type="module">
+      import { app } from "./app.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+        GoogleAuthProvider,
+        signInWithPopup,
+      } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-    <script>
-      // Client-only enhancements; no network calls.
-      (function () {
-        const msg = document.getElementById("message");
-        const cc = document.getElementById("char-count");
-        if (msg && cc) {
-          const update = () => {
-            cc.textContent = `${msg.value.length} / ${msg.maxLength}`;
-          };
-          msg.addEventListener("input", update);
-          update();
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      const provider = new GoogleAuthProvider();
+
+      const form = document.querySelector("form.feedback-form");
+      const subject = document.getElementById("subject");
+      const category = document.getElementById("category");
+      const message = document.getElementById("message");
+      const rating = document.getElementById("rating");
+      const contact = document.getElementById("contact");
+      const saveBtn = document.getElementById("save-draft");
+      const submitBtn = document.getElementById("submit");
+      const note = document.getElementById("feedback-note");
+      const signinStatus = document.getElementById("signin-status");
+      const cc = document.getElementById("char-count");
+
+      const DRAFT_KEY = "mc-feedback-draft-v1";
+      const allowedCategories = new Set(["general", "bug", "feature", "ui"]);
+
+      let currentUser = null;
+
+      function updateCharCount() {
+        if (message && cc) cc.textContent = `${message.value.length} / ${message.maxLength}`;
+      }
+
+      function loadDraft() {
+        try {
+          const raw = localStorage.getItem(DRAFT_KEY);
+          if (!raw) return;
+          const d = JSON.parse(raw);
+          if (subject && d.subject) subject.value = d.subject;
+          if (category && d.category && allowedCategories.has(d.category)) category.value = d.category;
+          if (message && d.message) message.value = d.message;
+          if (rating && d.rating) rating.value = String(d.rating);
+          if (contact && d.contact) contact.value = d.contact;
+        } catch {}
+      }
+
+      function saveDraftLocally() {
+        const draft = {
+          subject: subject.value.trim(),
+          category: category.value,
+          message: message.value.trim(),
+          rating: rating.value || "",
+          contact: contact.value.trim(),
+          savedAt: Date.now(),
+        };
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        note.textContent = "Draft saved locally.";
+      }
+
+      function clearDraft() {
+        localStorage.removeItem(DRAFT_KEY);
+      }
+
+      function validate() {
+        const msg = message.value.trim();
+        const cat = category.value;
+        const subj = subject.value.trim();
+        const rat = rating.value ? parseInt(rating.value, 10) : null;
+        let ok = true;
+        if (!allowedCategories.has(cat)) ok = false;
+        if (msg.length === 0 || msg.length > 2000) ok = false;
+        if (subj.length > 120) ok = false;
+        if (rat !== null && (isNaN(rat) || rat < 1 || rat > 5)) ok = false;
+        return ok;
+      }
+
+      function updateButtons() {
+        // Enable Save Draft when any input has a value
+        const anyVal =
+          subject.value || message.value || contact.value || rating.value || category.value;
+        saveBtn.disabled = !anyVal;
+        submitBtn.disabled = !validate();
+      }
+
+      async function requireAuthInteractive() {
+        if (currentUser) return currentUser;
+        try {
+          const res = await signInWithPopup(auth, provider);
+          return res.user;
+        } catch (e) {
+          throw new Error("Sign-in canceled or failed");
         }
-      })();
+      }
+
+      async function handleSubmit(e) {
+        e?.preventDefault?.();
+        note.textContent = "Submitting…";
+        submitBtn.disabled = true;
+        saveBtn.disabled = true;
+        try {
+          if (!validate()) throw new Error("Please complete the form.");
+          const user = await requireAuthInteractive();
+          currentUser = user;
+          const payload = {
+            subject: subject.value.trim() || null,
+            category: category.value,
+            message: message.value.trim(),
+            rating: rating.value ? parseInt(rating.value, 10) : null,
+            contact: contact.value.trim() || null,
+            uid: user.uid,
+            user: {
+              name: user.displayName || null,
+              email: user.email || null,
+              photoURL: user.photoURL || null,
+            },
+            status: "new",
+            ua: navigator.userAgent,
+            url: location.href,
+            createdAt: serverTimestamp(),
+          };
+          await addDoc(collection(db, "reviews"), payload);
+          clearDraft();
+          form.querySelectorAll("input, select, textarea, button").forEach((el) => (el.disabled = true));
+          note.textContent = "Thanks for your feedback! We'll review it soon.";
+          signinStatus.textContent = "Submitted successfully.";
+        } catch (err) {
+          console.error(err);
+          note.textContent = err?.message || "Submission failed.";
+          // Re-enable buttons to let user try again
+          saveBtn.disabled = false;
+          updateButtons();
+        }
+      }
+
+      // Wire up
+      onAuthStateChanged(auth, (u) => {
+        currentUser = u || null;
+        if (u) {
+          signinStatus.textContent = `Signed in as ${u.displayName || u.email || "Student"}.`;
+        } else {
+          signinStatus.textContent = "You're not signed in; we'll ask you to sign in when you submit.";
+        }
+      });
+
+      [subject, category, message, rating, contact].forEach((el) => {
+        el?.addEventListener("input", () => {
+          updateCharCount();
+          updateButtons();
+        });
+      });
+      updateCharCount();
+      loadDraft();
+      updateButtons();
+
+      saveBtn.addEventListener("click", saveDraftLocally);
+      submitBtn.addEventListener("click", handleSubmit);
+      form.addEventListener("submit", handleSubmit);
     </script>
     <script type="module" src="./banner.js"></script>
     <script src="./easter-eggs.js"></script>
