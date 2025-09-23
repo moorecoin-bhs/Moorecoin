@@ -434,16 +434,20 @@ td a.email-link:hover {
 .feedback-table {
   min-width: 860px;
 }
-.feedback-table th:nth-child(1) { /* When */
+.feedback-table th:nth-child(1) {
+  /* When */
   width: 140px;
 }
-.feedback-table th:nth-child(2) { /* Category */
+.feedback-table th:nth-child(2) {
+  /* Category */
   width: 100px;
 }
-.feedback-table th:nth-child(3) { /* Rating */
+.feedback-table th:nth-child(3) {
+  /* Rating */
   width: 90px;
 }
-.feedback-table th:nth-child(4) { /* User */
+.feedback-table th:nth-child(4) {
+  /* User */
   width: 220px;
 }
 .feedback-table td:nth-child(4) {
