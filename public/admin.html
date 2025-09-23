@@ -1768,9 +1768,12 @@
           const hay =
             `${r.subject || ""}\n${r.message || ""}\n${r.user?.email || ""}\n${r.user?.name || ""}`.toLowerCase();
           if (q && !hay.includes(q)) return;
-          const ts = r?.createdAt && typeof r.createdAt.toDate === "function"
-            ? r.createdAt.toDate()
-            : (r?.createdAt?.seconds ? new Date(r.createdAt.seconds * 1000) : null);
+          const ts =
+            r?.createdAt && typeof r.createdAt.toDate === "function"
+              ? r.createdAt.toDate()
+              : r?.createdAt?.seconds
+                ? new Date(r.createdAt.seconds * 1000)
+                : null;
           const when = ts ? ts.toLocaleString() : "--";
           const user = `${r.user?.name || "(anon)"}${r.user?.email ? `\n${r.user.email}` : ""}`;
           const rating = r.rating ? `★`.repeat(r.rating) : "-";
@@ -1888,9 +1891,12 @@
         const r = feedbackCache.find((x) => x.__id === id);
         if (!r) return;
         const div = document.createElement("div");
-        const ts = r?.createdAt && typeof r.createdAt.toDate === "function"
-          ? r.createdAt.toDate().toLocaleString()
-          : (r?.createdAt?.seconds ? new Date(r.createdAt.seconds * 1000).toLocaleString() : "--");
+        const ts =
+          r?.createdAt && typeof r.createdAt.toDate === "function"
+            ? r.createdAt.toDate().toLocaleString()
+            : r?.createdAt?.seconds
+              ? new Date(r.createdAt.seconds * 1000).toLocaleString()
+              : "--";
         div.innerHTML = `
           <div class="notice" style="margin-bottom:10px"><strong>Submitted:</strong> ${ts}</div>
           <p><strong>User:</strong> ${escapeHtml(r.user?.name || "(anon)")}${r.user?.email ? ` &lt;${escapeHtml(r.user.email)}&gt;` : ""}</p>
