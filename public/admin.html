@@ -1699,8 +1699,15 @@
         const tbody = document.getElementById("roulette-users-tbody");
         const status = document.getElementById("roulette-users-status");
         if (!tbody) return;
-        tbody.innerHTML =
-          '<tr><td colspan="5" style="text-align:center; opacity:.7;">Loading…</td></tr>';
+        tbody.replaceChildren();
+        const loadingRow = document.createElement("tr");
+        const loadingCell = document.createElement("td");
+        loadingCell.colSpan = 5;
+        loadingCell.style.textAlign = "center";
+        loadingCell.style.opacity = ".7";
+        loadingCell.textContent = "Loading…";
+        loadingRow.appendChild(loadingCell);
+        tbody.appendChild(loadingRow);
         status.textContent = "Fetching users…";
         try {
           if (!currentIdToken) throw new Error("Not authed");
@@ -1718,22 +1725,48 @@
           const json = await res.json();
           if (!res.ok) throw new Error(json.error || "Request failed");
           const users = json.users || [];
-          tbody.innerHTML = users
-            .map((u) => {
-              const name = u.displayName || "(no name)";
-              const email = u.email || "";
-              const coinsNum = Number(u.coins || 0);
-              const coins = coinsNum.toLocaleString();
-              const hour = u.hour ?? u.profile?.hour;
-              return `<tr data-uid="${u.uid}" data-name="${(name || "").toLowerCase()}" data-email="${(email || "").toLowerCase()}" data-hour="${hour ?? ""}" data-coins="${coinsNum}">
-                        <td><input type="checkbox" class="ru-check"></td>
-                        <td>${name}</td>
-                        <td>${email}</td>
-                        <td class="num">${coins}</td>
-                        <td class="num">${hour ?? ""}</td>
-                      </tr>`;
-            })
-            .join("");
+          const rows = users.map((u) => {
+            const name = u.displayName || "(no name)";
+            const email = u.email || "";
+            const coinsNum = Number(u.coins || 0);
+            const coins = coinsNum.toLocaleString();
+            const hour = u.hour ?? u.profile?.hour;
+
+            const tr = document.createElement("tr");
+            if (u.uid) tr.dataset.uid = String(u.uid);
+            tr.dataset.name = (name || "").toLowerCase();
+            tr.dataset.email = (email || "").toLowerCase();
+            tr.dataset.hour = hour == null ? "" : String(hour);
+            tr.dataset.coins = String(coinsNum);
+
+            const checkboxCell = document.createElement("td");
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.classList.add("ru-check");
+            checkboxCell.appendChild(checkbox);
+            tr.appendChild(checkboxCell);
+
+            const nameCell = document.createElement("td");
+            nameCell.textContent = name;
+            tr.appendChild(nameCell);
+
+            const emailCell = document.createElement("td");
+            emailCell.textContent = email;
+            tr.appendChild(emailCell);
+
+            const coinsCell = document.createElement("td");
+            coinsCell.classList.add("num");
+            coinsCell.textContent = coins;
+            tr.appendChild(coinsCell);
+
+            const hourCell = document.createElement("td");
+            hourCell.classList.add("num");
+            hourCell.textContent = hour == null ? "" : String(hour);
+            tr.appendChild(hourCell);
+
+            return tr;
+          });
+          tbody.replaceChildren(...rows);
           status.textContent = `Loaded ${users.length} users`;
         } catch (e) {
           console.error(e);
