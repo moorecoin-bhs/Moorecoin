@@ -312,7 +312,6 @@ Discoverables:
 - Click sequences:
   - Click the logo 5× within ~1.5s → playful spin + toast
   - Triple-click the Moorecoins balance number → pulse + randomized tip
-  - On `404.html`, click the headline 3× → confetti + redirect home
   - Double-click the footer links area → small overlay credits card (auto-dismiss)
 - Long-press hint: hover/touch-hold the “Moorecoin value” area (~1.2s) → decay curve tip
 - Phrase triggers (type anywhere outside inputs):
