@@ -324,3 +324,7 @@ Discoverables:
   - idkfa → “no god mode” toast
 
 Reduced Motion: if the user has “Reduce Motion” enabled, confetti is replaced by a simple toast.
+
+## Contact
+
+Email me at [noah@dingl.us](mailto:noah@dingl.us)
