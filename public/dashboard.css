@@ -383,6 +383,19 @@ footer {
   margin-left: 4px;
 }
 
+@media (max-width: 640px) {
+  footer {
+    padding: 10px 16px 8px;
+  }
+  #footer-content {
+    gap: 16px;
+    font-size: 0.85rem;
+  }
+  #footer-content a {
+    margin-left: 0;
+  }
+}
+
 /* Light mode overrides */
 @media (prefers-color-scheme: light) {
   /* Profile dropdown */
@@ -670,8 +683,9 @@ footer {
     padding: 6px 14px 8px 14px;
   }
   #footer-content {
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
     align-items: center;
   }
   #logo,
