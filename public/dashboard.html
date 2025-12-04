@@ -876,6 +876,7 @@
 						<label for="bond-amount">Amount of Moorecoins to bond</label>
 						<input id="bond-amount" type="number" min="1" step="1" max="${currentUserMoorecoins}" placeholder="100" />
 						<div class="inline-info" id="bond-limit-info"></div>
+                        <div class="error-message" id="bond-error" style="color: #ff4d4d; font-size: 0.9em; margin-top: 4px; display: none;"></div>
 					</div>
 					<div class="form-row two-col">
 						<div>
@@ -936,14 +937,29 @@
             {
               label: "Purchase Bond",
               primary: true,
-              onClick: async () => {
+              closeOnResolve: false,
+              onClick: async ({ close }) => {
+                const errorEl = div.querySelector("#bond-error");
+                errorEl.style.display = "none";
+                errorEl.textContent = "";
+
                 const amt = Number(amount.value || 0);
                 const term = Number(
                   div.querySelector("#bond-term").value || 14,
                 );
+                
                 if (!amt || amt < 1) {
-                  return;
+                    errorEl.textContent = "Please enter a valid amount.";
+                    errorEl.style.display = "block";
+                    return;
                 }
+
+                if (!Number.isInteger(amt)) {
+                    errorEl.textContent = "Partial bonds are not allowed. Please enter a whole number.";
+                    errorEl.style.display = "block";
+                    return;
+                }
+
                 try {
                   const resp = await fetch(`${apiBase}/purchase/bond`, {
                     method: "POST",
@@ -956,7 +972,9 @@
                   const json = await resp.json();
                   if (!resp.ok) {
                     console.error(json);
-                    return false;
+                    errorEl.textContent = json.error || "Failed to purchase bond.";
+                    errorEl.style.display = "block";
+                    return;
                   }
                   currentUserMoorecoins = json.moorecoins;
                   document.getElementById("moorecoins").textContent = String(
@@ -964,9 +982,11 @@
                   );
                   window.__activeBond = json.bond;
                   enableBondView();
+                  close();
                 } catch (e) {
                   console.error(e);
-                  return false;
+                  errorEl.textContent = "An error occurred. Please try again.";
+                  errorEl.style.display = "block";
                 }
               },
             },
