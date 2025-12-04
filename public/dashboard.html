@@ -902,7 +902,7 @@
         }
         function roundedPayout(v) {
           const raw = v * (1 + currentInterest);
-          return Math.floor(raw + 0.5);
+          return raw.toFixed(2);
         }
         function recalc() {
           const v = Number(amount.value || 0);
@@ -1107,10 +1107,7 @@
 							<span class="game-title">Blackjack</span>
 							<small class="game-desc">Beat the dealer with probability insight.</small>
 						</li>
-						<li class="game-item" data-game="roulette">
-							<span class="game-title">Roulette</span>
-							<small class="game-desc">Explore variance & risk spreads.</small>
-						</li>
+
 						<li class="game-item" data-game="plinko">
 							<span class="game-title">Plinko</span>
 							<small class="game-desc">Visualize distribution curves.</small>
