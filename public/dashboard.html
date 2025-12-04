@@ -947,17 +947,18 @@
                 const term = Number(
                   div.querySelector("#bond-term").value || 14,
                 );
-                
+
                 if (!amt || amt < 1) {
-                    errorEl.textContent = "Please enter a valid amount.";
-                    errorEl.style.display = "block";
-                    return;
+                  errorEl.textContent = "Please enter a valid amount.";
+                  errorEl.style.display = "block";
+                  return;
                 }
 
                 if (!Number.isInteger(amt)) {
-                    errorEl.textContent = "Partial bonds are not allowed. Please enter a whole number.";
-                    errorEl.style.display = "block";
-                    return;
+                  errorEl.textContent =
+                    "Partial bonds are not allowed. Please enter a whole number.";
+                  errorEl.style.display = "block";
+                  return;
                 }
 
                 try {
@@ -972,7 +973,8 @@
                   const json = await resp.json();
                   if (!resp.ok) {
                     console.error(json);
-                    errorEl.textContent = json.error || "Failed to purchase bond.";
+                    errorEl.textContent =
+                      json.error || "Failed to purchase bond.";
                     errorEl.style.display = "block";
                     return;
                   }
