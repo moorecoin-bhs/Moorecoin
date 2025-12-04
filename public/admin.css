@@ -145,8 +145,6 @@ button.btn-secondary {
   margin-top: 4px;
 }
 
-
-
 @media (prefers-color-scheme: light) {
   .stat-box {
     background: #ffffff;

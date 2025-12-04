@@ -653,8 +653,6 @@
         </div>
         <p class="inline-info" id="pending-status" aria-live="polite"></p>
       </section>
-
-
     </main>
 
     <footer>
@@ -793,7 +791,6 @@
               panel.removeAttribute("hidden");
               if (panelId === "panel-pending") {
                 loadPending();
-
               } else if (panelId === "panel-feedback") {
                 startFeedbackStream();
               }
@@ -1389,17 +1386,22 @@
                 : null;
           const when = ts ? ts.toLocaleString() : "--";
           const user = `<div title="${escapeHtml(r.user?.email || "")}">${escapeHtml(r.user?.name || "(anon)")}</div>`;
-          const rating = r.rating ? `<span style="color:#ffd166; margin-right:6px;">${"★".repeat(r.rating)}</span>` : "";
+          const rating = r.rating
+            ? `<span style="color:#ffd166; margin-right:6px;">${"★".repeat(r.rating)}</span>`
+            : "";
           const msg =
             rating +
             (r.subject ? `<strong>${escapeHtml(r.subject)}</strong> — ` : "") +
             `${escapeHtml((r.message || "").slice(0, 180))}${(r.message || "").length > 180 ? "…" : ""}`;
-          
+
           const status = r.status || "new";
           let statusBadge = `<span class="chip">${status}</span>`;
-          if (status === "new") statusBadge = `<span class="chip" style="background:#2b9348; color:#fff">new</span>`;
-          else if (status === "closed") statusBadge = `<span class="chip" style="background:#3a3f45; color:#aaa">closed</span>`;
-          else if (status === "spam") statusBadge = `<span class="chip" style="background:#d90429; color:#fff">spam</span>`;
+          if (status === "new")
+            statusBadge = `<span class="chip" style="background:#2b9348; color:#fff">new</span>`;
+          else if (status === "closed")
+            statusBadge = `<span class="chip" style="background:#3a3f45; color:#aaa">closed</span>`;
+          else if (status === "spam")
+            statusBadge = `<span class="chip" style="background:#d90429; color:#fff">spam</span>`;
 
           rows.push(`<tr data-id="${r.__id}">
             <td style="white-space:nowrap; font-size:0.9em; opacity:0.8">${when}</td>
@@ -1508,9 +1510,12 @@
             : r?.createdAt?.seconds
               ? new Date(r.createdAt.seconds * 1000).toLocaleString()
               : "--";
-        
+
         const statusOptions = ["new", "reviewed", "closed", "spam"]
-          .map(s => `<option value="${s}" ${s === (r.status || "new") ? "selected" : ""}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`)
+          .map(
+            (s) =>
+              `<option value="${s}" ${s === (r.status || "new") ? "selected" : ""}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`,
+          )
           .join("");
 
         div.innerHTML = `
@@ -1529,11 +1534,13 @@
           </div>
           ${r.contact ? `<p style="margin-top:8px"><strong>Contact:</strong> ${escapeHtml(r.contact)}</p>` : ""}
         `;
-        
+
         // Handle status change immediately
-        div.querySelector("#modal-status-select").addEventListener("change", (e) => {
-           updateFeedbackStatus(id, e.target.value);
-        });
+        div
+          .querySelector("#modal-status-select")
+          .addEventListener("change", (e) => {
+            updateFeedbackStatus(id, e.target.value);
+          });
 
         createModal({
           title: "Feedback Details",
