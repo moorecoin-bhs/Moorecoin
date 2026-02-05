@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Moorecoins (CSV) — TradingView-style Candles</title>
+    <title>Data Viewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       :root {
@@ -647,6 +647,8 @@
           borderDownColor: "#ef5350",
           wickUpColor: "#26a69a",
           wickDownColor: "#ef5350",
+          borderVisible: true,
+          wickVisible: true,
         },
       );
 
@@ -1309,9 +1311,12 @@
           // Build URL with query parameter for incremental updates
           let fetchUrl = url;
           if (isIncremental && lastEpoch) {
-            // Add 30 second buffer (30000ms) to account for latency and overlap
-            const bufferMs = 30000;
-            const epochWithBuffer = lastEpoch - bufferMs;
+            // Add 30 second buffer to account for latency and overlap
+            // Detect if epoch is in milliseconds (13+ digits) or seconds (10 digits)
+            const epochStr = String(Math.trunc(lastEpoch));
+            const isMilliseconds = epochStr.length >= 13;
+            const bufferAmount = isMilliseconds ? 30000 : 30; // 30 seconds in appropriate units
+            const epochWithBuffer = lastEpoch - bufferAmount;
             const separator = url.includes("?") ? "&" : "?";
             fetchUrl = `${url}${separator}since=${epochWithBuffer}`;
           }
