@@ -318,6 +318,9 @@
       >
         Admin Console
       </button>
+      <button class="profile-menu-item" id="open-viewer" role="menuitem">
+        Open Data Viewer
+      </button>
       <button class="profile-menu-item" id="view-profile" role="menuitem">
         View Profile
       </button>
@@ -1202,6 +1205,11 @@
         window.location.href = "./@me.html";
         toggleMenu(false);
       });
+
+      document.getElementById("open-viewer").addEventListener("click", () => {
+        window.location.href = "./dataviewer.html";
+        toggleMenu(false);
+      })
 
       (() => {
         const el = document.getElementById("investor-splash");
