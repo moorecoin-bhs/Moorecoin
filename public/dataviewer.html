@@ -1171,7 +1171,24 @@
           delete candle.count; // Remove count property before returning
         }
 
-        return out;
+        // Filter out consecutive candles with identical values (no price movement)
+        // This prevents visual clutter when only timestamps change
+        const filtered = [];
+        for (let i = 0; i < out.length; i++) {
+          const prev = i > 0 ? out[i - 1] : null;
+          const curr = out[i];
+          
+          // Keep candle if value changed or it's the first candle
+          if (!prev || 
+              prev.open !== curr.open || 
+              prev.high !== curr.high || 
+              prev.low !== curr.low || 
+              prev.close !== curr.close) {
+            filtered.push(curr);
+          }
+        }
+
+        return filtered;
       }
 
       function buildHistogram(rows, valueCol, intervalMs) {
