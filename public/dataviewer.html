@@ -1267,14 +1267,21 @@
         const shouldFilterFlat = filterFlatCheckbox.checked;
         const useLogScale = logScaleCheckbox.checked;
 
-        const ohlc = buildOhlc(rawRows, candleCol, intervalMs, shouldFilterFlat);
+        const ohlc = buildOhlc(
+          rawRows,
+          candleCol,
+          intervalMs,
+          shouldFilterFlat,
+        );
         currentOhlcData = ohlc;
         candleSeries.setData(ohlc);
 
         // Update price scale mode
         chart.applyOptions({
           rightPriceScale: {
-            mode: useLogScale ? LightweightCharts.PriceScaleMode.Logarithmic : LightweightCharts.PriceScaleMode.Normal,
+            mode: useLogScale
+              ? LightweightCharts.PriceScaleMode.Logarithmic
+              : LightweightCharts.PriceScaleMode.Normal,
             borderColor: "#363c4e",
           },
         });
