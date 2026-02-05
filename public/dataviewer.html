@@ -428,6 +428,17 @@
       </div>
 
       <div class="tool-group">
+        <label class="indicator-item" style="margin: 0; padding: 0">
+          <input type="checkbox" id="filterFlat" checked />
+          <span style="font-size: 12px">Hide Flat</span>
+        </label>
+        <label class="indicator-item" style="margin: 0; padding: 0">
+          <input type="checkbox" id="logScale" />
+          <span style="font-size: 12px">Log Scale</span>
+        </label>
+      </div>
+
+      <div class="tool-group">
         <button class="tool-btn" id="zoomInBtn" title="Zoom In">
           <svg viewBox="0 0 24 24">
             <path
@@ -569,6 +580,8 @@
       const zoomInBtn = document.getElementById("zoomInBtn");
       const zoomOutBtn = document.getElementById("zoomOutBtn");
       const fitBtn = document.getElementById("fitBtn");
+      const filterFlatCheckbox = document.getElementById("filterFlat");
+      const logScaleCheckbox = document.getElementById("logScale");
 
       // Panel elements
       const drawingControls = document.getElementById("drawingControls");
@@ -1125,7 +1138,7 @@
         return Math.floor(tSec / intervalSec) * intervalSec;
       }
 
-      function buildOhlc(rows, valueCol, intervalMs) {
+      function buildOhlc(rows, valueCol, intervalMs, shouldFilterFlat = true) {
         const pts = [];
         for (const r of rows) {
           const epochStr = r.epoch ?? r.EPOCH ?? r.Epoch;
@@ -1171,26 +1184,29 @@
           delete candle.count; // Remove count property before returning
         }
 
-        // Filter out consecutive candles with identical values (no price movement)
+        // Optionally filter out consecutive candles with identical values (no price movement)
         // This prevents visual clutter when only timestamps change
-        const filtered = [];
-        for (let i = 0; i < out.length; i++) {
-          const prev = i > 0 ? out[i - 1] : null;
-          const curr = out[i];
+        if (shouldFilterFlat) {
+          const filtered = [];
+          for (let i = 0; i < out.length; i++) {
+            const prev = i > 0 ? out[i - 1] : null;
+            const curr = out[i];
 
-          // Keep candle if value changed or it's the first candle
-          if (
-            !prev ||
-            prev.open !== curr.open ||
-            prev.high !== curr.high ||
-            prev.low !== curr.low ||
-            prev.close !== curr.close
-          ) {
-            filtered.push(curr);
+            // Keep candle if value changed or it's the first candle
+            if (
+              !prev ||
+              prev.open !== curr.open ||
+              prev.high !== curr.high ||
+              prev.low !== curr.low ||
+              prev.close !== curr.close
+            ) {
+              filtered.push(curr);
+            }
           }
+          return filtered;
         }
 
-        return filtered;
+        return out;
       }
 
       function buildHistogram(rows, valueCol, intervalMs) {
@@ -1248,10 +1264,20 @@
         const intervalMs = Number(intervalSel.value);
         const candleCol = valueColSel.value;
         const overlayCol = overlayColSel.value;
+        const shouldFilterFlat = filterFlatCheckbox.checked;
+        const useLogScale = logScaleCheckbox.checked;
 
-        const ohlc = buildOhlc(rawRows, candleCol, intervalMs);
+        const ohlc = buildOhlc(rawRows, candleCol, intervalMs, shouldFilterFlat);
         currentOhlcData = ohlc;
         candleSeries.setData(ohlc);
+
+        // Update price scale mode
+        chart.applyOptions({
+          rightPriceScale: {
+            mode: useLogScale ? LightweightCharts.PriceScaleMode.Logarithmic : LightweightCharts.PriceScaleMode.Normal,
+            borderColor: "#363c4e",
+          },
+        });
 
         if (overlayCol) {
           const hist = buildHistogram(rawRows, overlayCol, intervalMs);
@@ -1440,6 +1466,8 @@
         rebuild();
       });
       overlayColSel.addEventListener("change", rebuild);
+      filterFlatCheckbox.addEventListener("change", rebuild);
+      logScaleCheckbox.addEventListener("change", rebuild);
 
       // Resize handling
       const ro = new ResizeObserver(() => {
