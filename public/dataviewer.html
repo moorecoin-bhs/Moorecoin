@@ -1143,7 +1143,14 @@
         for (const p of pts) {
           const b = bucketStartSec(p.t, intervalMs);
           if (!cur || cur.time !== b) {
-            cur = { time: b, open: p.v, high: p.v, low: p.v, close: p.v, count: 1 };
+            cur = {
+              time: b,
+              open: p.v,
+              high: p.v,
+              low: p.v,
+              close: p.v,
+              count: 1,
+            };
             out.push(cur);
           } else {
             cur.high = Math.max(cur.high, p.v);
@@ -1152,7 +1159,7 @@
             cur.count++;
           }
         }
-        
+
         // For candles with very few data points, add slight high/low variation
         // to make wicks visible (simulates intrabar volatility)
         for (const candle of out) {
@@ -1163,7 +1170,7 @@
           }
           delete candle.count; // Remove count property before returning
         }
-        
+
         return out;
       }
 
