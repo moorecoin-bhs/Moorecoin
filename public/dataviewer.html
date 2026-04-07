@@ -854,9 +854,16 @@
           });
 
           // Get price range
-          const allPrices = currentOhlcData.map((d) => [d.high, d.low]).flat();
-          const minPrice = Math.min(...allPrices);
-          const maxPrice = Math.max(...allPrices);
+          let minPrice = Infinity;
+          let maxPrice = -Infinity;
+          for (const candle of currentOhlcData) {
+            if (Number.isFinite(candle.low)) {
+              minPrice = Math.min(minPrice, candle.low);
+            }
+            if (Number.isFinite(candle.high)) {
+              maxPrice = Math.max(maxPrice, candle.high);
+            }
+          }
           const priceRange = maxPrice - minPrice;
 
           line.setData([
@@ -1437,7 +1444,13 @@
               .filter((e) => Number.isFinite(e));
 
             if (epochs.length > 0) {
-              lastEpoch = Math.max(...epochs);
+              let latestEpoch = epochs[0];
+              for (let i = 1; i < epochs.length; i++) {
+                if (epochs[i] > latestEpoch) {
+                  latestEpoch = epochs[i];
+                }
+              }
+              lastEpoch = latestEpoch;
             }
           }
 
